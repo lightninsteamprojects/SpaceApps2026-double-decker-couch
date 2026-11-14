@@ -227,6 +227,8 @@
     .pillBtn .range { font-size: 10px; color: var(--muted); }
     .pillBtn.active { border-color: var(--accent); color: var(--accent); }
     .pillBtn.active .range { color: var(--accent); }
+    .pillBtn.unavailable { opacity: .35; cursor: not-allowed; }
+    .pillBtn.unavailable:hover { border-color: var(--line); }
 
     .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
@@ -1081,9 +1083,16 @@
       bandFeatures.textContent = features ? `Possible features in this range: ${features}` : '';
       bandFeaturesRow.style.display = features ? 'block' : 'none';
       bandIceHint.style.display = 'block';
-      Object.keys(b).sort().forEach(key => {
+      // always show all six bands; one this field has no frames for is greyed out and not clickable
+      const allBands = [...new Set([1, 2, 3, 4, 5, 6].map(n => `SPHEREx-D${n}`).concat(Object.keys(b)))].sort();
+      allBands.forEach(key => {
+        const available = !!(b[key] && b[key].length);
         const btn = document.createElement('button');
-        btn.className = 'pillBtn' + (key === currentBand ? ' active' : '');
+        btn.className = 'pillBtn' + (key === currentBand ? ' active' : '') + (available ? '' : ' unavailable');
+        if (!available) {
+          btn.disabled = true;
+          btn.title = 'No photos in this band for this field';
+        }
         const code = document.createElement('span');
         code.textContent = displayBand(key);
         btn.appendChild(code);
@@ -1094,7 +1103,7 @@
           r.textContent = `${range[0]}–${range[1]} µm`;
           btn.appendChild(r);
         }
-        btn.onclick = () => openField(t.id, true, bandCode(key), currentMode);
+        if (available) btn.onclick = () => openField(t.id, true, bandCode(key), currentMode);
         bandRow.appendChild(btn);
       });
     }

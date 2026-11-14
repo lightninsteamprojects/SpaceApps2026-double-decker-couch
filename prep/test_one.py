@@ -527,9 +527,28 @@ def load_targets():
     return []
 
 
+def merge_entry(existing, new):
+    """Merge a run's entry into the saved one, per band: bands this run produced
+    replace the saved ones, bands it didn't touch (e.g. D2 on a --bands D1,D3 run)
+    are kept. A band that already has frames is never dropped."""
+    if not existing:
+        return new
+    merged = {**existing, **{k: v for k, v in new.items() if k not in ("bands", "band_ranges", "frames")}}
+    bands = dict(existing.get("bands", {}))
+    for band, frames in new.get("bands", {}).items():
+        if frames:
+            bands[band] = frames
+    merged["bands"] = bands
+    merged["band_ranges"] = {**existing.get("band_ranges", {}), **new.get("band_ranges", {})}
+    # top-level "frames" is the D2 view the page falls back on
+    merged["frames"] = bands.get("SPHEREx-D2", existing.get("frames", []))
+    return merged
+
+
 def save_target_entry(entry):
+    existing = next((t for t in load_targets() if t["id"] == entry["id"]), None)
     targets = [t for t in load_targets() if t["id"] != entry["id"]]
-    targets.append(entry)
+    targets.append(merge_entry(existing, entry))
     with open(TARGETS_JSON, "w") as f:
         json.dump(targets, f, indent=2)
     return len(targets)
