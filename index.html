@@ -134,12 +134,17 @@
     @media (min-width: 1200px) and (min-height: 600px) {
       main {
         grid-template-columns: var(--s) minmax(300px, 1fr) minmax(260px, 0.7fr);
+        grid-template-rows: minmax(0, 1fr);  /* without this, an "auto" row grows to fit
+          whichever column's content is tallest (e.g. a long comment list), inflating the
+          whole grid -- and the page -- past the viewport instead of letting that column
+          scroll internally */
         grid-template-areas: "viewer answer browse";
         align-items: stretch;
         overflow: hidden;
       }
       #viewerCol { overflow: visible; min-height: 0; }
-      #answerCol, #browseCol { min-height: 0; overflow-y: auto; }
+      #answerCol { min-height: 0; overflow-y: auto; }
+      #browseCol { min-height: 0; overflow: hidden; }  /* its tab panels scroll themselves, see below */
     }
 
     /* ----- viewer ----- */
@@ -236,7 +241,7 @@
       overflow: hidden;
     }
 
-    #howItWorksLink { color: var(--accent); }
+    #howItWorksLink, #bandFeaturesToggle { color: var(--accent); }
 
     #shareRow { margin-top: 8px; }
 
@@ -327,6 +332,77 @@
 
     .row { display: flex; gap: 8px; margin-top: 8px; }
 
+    /* ----- Browse / Discussion / About tabs (inside #browseCol) -----
+       #browseCol is a flex column so whichever tab panel is active fills the
+       rest of its height and scrolls itself, instead of the panel (or page)
+       growing to fit a long comment list */
+    #browseCol { display: flex; flex-direction: column; }
+    .tabRow { flex: 0 0 auto; display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    .tabBtn { flex: 1; padding: 7px 6px; font-size: 13px; background: transparent; border-color: transparent; }
+    .tabBtn.active { background: var(--bg); border-color: var(--line); color: var(--accent); }
+    .tabCount { margin-left: 3px; color: var(--muted); font-size: 11px; }
+    .tabBtn.active .tabCount { color: var(--accent); }
+    .tabPanel { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
+
+    /* Discussion only: the panel itself doesn't scroll -- the comment list does,
+       and the form stays pinned to the bottom of the panel */
+    #discussionTab { overflow: hidden; }
+    #discussionTab .section { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; margin-bottom: 0; }
+
+    #commentsList { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .commentItem { padding: 8px 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+    .commentHead { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .commentName { color: var(--text); font-weight: 600; }
+    .commentBody { margin: 0; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+
+    #discussionStatus { flex: 0 0 auto; min-height: 1.3em; margin: 8px 0 0; color: var(--accent); font-size: 13px; }
+    #discussionHeading { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #discussionSubhead { margin: 0 0 10px; }
+
+    /* compact form: message box on top, nickname + counter + Post on one row, pinned below the list */
+    #discussionForm { flex: 0 0 auto; margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+    #discussionForm textarea {
+      width: 100%;
+      font: inherit;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 12px;
+      resize: vertical;
+    }
+    #discussionForm textarea:focus { outline: none; border-color: var(--accent); }
+    .discussionFormRow { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    #discussionNickname {
+      flex: 1;
+      min-width: 0;
+      font: inherit;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 10px;
+    }
+    #discussionNickname:focus { outline: none; border-color: var(--accent); }
+    #discussionMsgCount { flex: 0 0 auto; color: var(--muted); font-size: 12px; white-space: nowrap; }
+    #discussionPostBtn { flex: 0 0 auto; padding: 7px 14px; }
+    #discussionForm .hint { margin-top: 6px; }
+
+    /* ----- detector-flags overlay ----- */
+    #flagOverlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .55;
+      pointer-events: none;
+      image-rendering: pixelated;
+    }
+    #flagsLabel { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 13px; }
+    #flagsLabel input { accent-color: var(--accent); }
+
     #progressBadge { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
     #fieldBlurb, #fieldFact { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
@@ -401,6 +477,7 @@
       <p id="fieldFact" style="display:none"></p>
       <div id="imageWrap">
         <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
+        <img id="flagOverlay" alt="" aria-hidden="true" style="display:none">
         <div id="pausedLabel" style="display:none">Paused</div>
       </div>
       <div id="info"></div>
@@ -454,6 +531,11 @@
         <div id="bandRow" class="pillRow" style="display:none"></div>
         <p id="bandNote" class="hint" style="display:none">Different bands are photographed on different dates.</p>
         <p id="bandDesc" class="hint" style="display:none"></p>
+        <p id="bandFeaturesRow" class="hint" style="display:none"><a href="#" id="bandFeaturesToggle">Features ▾</a></p>
+        <div id="bandFeaturesBox" style="display:none">
+          <p id="bandFeatures" class="hint"></p>
+          <p id="bandFeaturesNote" class="hint">These are features that can appear in a star's or object's spectrum. Each image covers a wide range of wavelengths, so you usually won't see individual features in the picture itself, only how bright things look in this band. For distant galaxies, redshift stretches all features to longer wavelengths, so the same feature can land in a different band depending on distance.</p>
+        </div>
         <p id="bandIceHint" class="hint" style="display:none">Ice and dust features are found by comparing bands. A single photo may not show them clearly.</p>
 
         <div class="row">
@@ -468,6 +550,12 @@
           </label>
         </div>
 
+        <label id="flagsLabel" style="display:none">
+          <input type="checkbox" id="flagsToggle">
+          Show detector flags
+        </label>
+        <p id="flagsLegend" class="hint" style="display:none">Red = pixels the detector pipeline flagged (saturation, cosmic rays, bad pixels, ghosts). These are likely artifacts, not real objects.</p>
+
         <div id="shareRow" class="row">
           <button id="downloadBtn">Download this photo</button>
           <button id="copyImgBtn">Copy image</button>
@@ -479,23 +567,52 @@
       <div id="answerFade" class="scrollFade" aria-hidden="true"></div>
     </aside>
 
-    <!-- column 3: browse other fields + about -->
+    <!-- column 3: browse other fields / discussion / about, as tabs -->
     <aside id="browseCol">
-      <div class="section">
-        <h2>Browse fields</h2>
-        <input id="search" type="search" placeholder="Search fields, or RA Dec e.g. 210.8 54.3" autocomplete="off">
-        <ul id="fieldList"></ul>
-        <p id="noMatch"></p>
-        <div class="row">
-          <button id="randomBtn">Random field</button>
-          <button id="surpriseBtn">Surprise me</button>
-          <button id="copyBtn">Copy link</button>
+      <div class="tabRow">
+        <button class="tabBtn active" data-tab="browseTab">Browse</button>
+        <button class="tabBtn" data-tab="discussionTab">Discussion<span id="discussionCount" class="tabCount"></span></button>
+        <button class="tabBtn" data-tab="aboutTab">About</button>
+      </div>
+
+      <div class="tabPanel" id="browseTab">
+        <div class="section">
+          <h2>Browse fields</h2>
+          <input id="search" type="search" placeholder="Search fields, or RA Dec e.g. 210.8 54.3" autocomplete="off">
+          <ul id="fieldList"></ul>
+          <p id="noMatch"></p>
+          <div class="row">
+            <button id="randomBtn">Random field</button>
+            <button id="surpriseBtn">Surprise me</button>
+            <button id="copyBtn">Copy link</button>
+          </div>
         </div>
       </div>
 
-      <div class="section">
-        <h2>About</h2>
-        <p>SPHEREx is a NASA space telescope that maps the whole sky in infrared light. Each answer you give is saved, so we can see where people agree.</p>
+      <div class="tabPanel" id="discussionTab" style="display:none">
+        <div class="section">
+          <h2 id="discussionHeading">Discussion</h2>
+          <p id="discussionSubhead" class="hint">Comments here are for this field only.</p>
+          <div id="commentsList"></div>
+          <div id="discussionStatus" role="status" aria-live="polite"></div>
+          <div id="discussionForm">
+            <textarea id="discussionBody" maxlength="500" rows="3" placeholder="Say something about this field..."></textarea>
+            <div class="discussionFormRow">
+              <input id="discussionNickname" maxlength="30" placeholder="Nickname (optional)">
+              <span id="discussionMsgCount">0/500</span>
+              <button id="discussionPostBtn">Post</button>
+            </div>
+            <p class="hint">Don't share personal information. Posts are reviewed before they appear.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabPanel" id="aboutTab" style="display:none">
+        <div class="section">
+          <h2>About</h2>
+          <p>SPHEREx is a NASA space telescope that maps the whole sky in infrared light. Each answer you give is saved, so we can see where people agree.</p>
+          <p class="hint"><a href="#" id="resetProgressLink">Reset my progress</a></p>
+        </div>
       </div>
       <div id="browseFade" class="scrollFade" aria-hidden="true"></div>
     </aside>
@@ -554,6 +671,10 @@
     const bandRow = document.getElementById('bandRow');
     const bandNote = document.getElementById('bandNote');
     const bandDesc = document.getElementById('bandDesc');
+    const bandFeaturesRow = document.getElementById('bandFeaturesRow');
+    const bandFeaturesToggle = document.getElementById('bandFeaturesToggle');
+    const bandFeaturesBox = document.getElementById('bandFeaturesBox');
+    const bandFeatures = document.getElementById('bandFeatures');
     const bandIceHint = document.getElementById('bandIceHint');
     const modeRow = document.getElementById('modeRow');
     const modeNormalBtn = document.getElementById('modeNormalBtn');
@@ -570,6 +691,20 @@
     const modalBox = document.getElementById('modalBox');
     const modalBody = document.getElementById('modalBody');
     const modalButtons = document.getElementById('modalButtons');
+    const flagOverlay = document.getElementById('flagOverlay');
+    const flagsLabel = document.getElementById('flagsLabel');
+    const flagsToggle = document.getElementById('flagsToggle');
+    const flagsLegend = document.getElementById('flagsLegend');
+    const discussionCount = document.getElementById('discussionCount');
+    const answerCol = document.getElementById('answerCol');
+    const browseCol = document.getElementById('browseCol');
+    const discussionHeading = document.getElementById('discussionHeading');
+    const commentsList = document.getElementById('commentsList');
+    const discussionStatus = document.getElementById('discussionStatus');
+    const discussionNickname = document.getElementById('discussionNickname');
+    const discussionBody = document.getElementById('discussionBody');
+    const discussionMsgCount = document.getElementById('discussionMsgCount');
+    const discussionPostBtn = document.getElementById('discussionPostBtn');
 
     // image-rendering only changes how the browser displays the pixels; the
     // underlying PNG files are untouched either way
@@ -588,6 +723,131 @@
     let i = 0;
     let timer = null;
     let fields = {};  // field id -> {blurb, fact}, from fields.json (optional)
+    let flagsData = {};  // target id -> band code -> stable id -> flag_url, from flags.json (optional)
+
+    function flagUrlForFrame(f) {
+      if (!currentTarget || !currentBand || !f) return null;
+      const byBand = (flagsData[currentTarget.id] || {})[bandCode(currentBand)];
+      if (!byBand) return null;
+      const stableId = f.url.split('/').pop().replace(/\.png$/, '');
+      return byBand[stableId] || null;
+    }
+
+    function updateFlagsControlVisibility() {
+      if (!flagsLabel || !flagsLegend) return;
+      const byBand = currentTarget && currentBand ? (flagsData[currentTarget.id] || {})[bandCode(currentBand)] : null;
+      const hasAny = !!(byBand && Object.keys(byBand).length);
+      flagsLabel.style.display = hasAny ? 'flex' : 'none';
+      flagsLegend.style.display = hasAny ? 'block' : 'none';
+      if (!hasAny && flagOverlay) flagOverlay.style.display = 'none';
+    }
+
+    function updateFlagOverlay() {
+      if (!flagOverlay || !flagsToggle) return;
+      const url = flagsToggle.checked ? flagUrlForFrame(frames[i]) : null;
+      if (url) {
+        flagOverlay.src = url;
+        flagOverlay.style.display = 'block';
+      } else {
+        flagOverlay.style.display = 'none';
+      }
+    }
+
+    if (flagsToggle) {
+      flagsToggle.checked = localStorage.getItem('showFlags') === '1';
+      flagsToggle.onchange = () => {
+        localStorage.setItem('showFlags', flagsToggle.checked ? '1' : '0');
+        updateFlagOverlay();
+      };
+    }
+
+    // ----- per-field discussion -----
+    function relativeTime(iso) {
+      const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+      if (mins < 1) return 'just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      return `${Math.floor(hrs / 24)}d ago`;
+    }
+
+    function renderComment(c) {
+      const div = document.createElement('div');
+      div.className = 'commentItem';
+      const head = document.createElement('div');
+      head.className = 'commentHead';
+      const name = document.createElement('span');
+      name.className = 'commentName';
+      name.textContent = (c.nickname && c.nickname.trim()) ? c.nickname.trim() : 'Anonymous';
+      const meta = document.createElement('span');
+      meta.textContent = `${relativeTime(c.created_at)} · ${displayBand(c.band)}`;
+      head.appendChild(name);
+      head.appendChild(meta);
+      const body = document.createElement('p');
+      body.className = 'commentBody';
+      body.textContent = c.body;
+      div.appendChild(head);
+      div.appendChild(body);
+      return div;
+    }
+
+    async function refreshDiscussion() {
+      if (!currentTarget) return;
+      const fieldId = currentTarget.id;
+      const fieldLabel = currentTarget.label;
+      discussionHeading.textContent = `Discussion · ${fieldLabel}`;
+      discussionHeading.title = fieldLabel;  // full label on hover when the heading is truncated
+      commentsList.innerHTML = '';
+      discussionStatus.textContent = 'Loading comments…';
+      const { data, error } = await sb.from('comments')
+        .select('nickname, body, band, created_at')
+        .eq('field_id', fieldId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (currentTarget.id !== fieldId) return;  // field changed again while this was in flight
+      if (error) {
+        console.error(error);
+        discussionStatus.textContent = 'Could not load comments right now.';
+        discussionCount.textContent = '';
+        return;
+      }
+      discussionStatus.textContent = data.length ? '' : `No comments yet for ${fieldLabel}. Be the first to post.`;
+      data.forEach(c => commentsList.appendChild(renderComment(c)));
+      discussionCount.textContent = data.length ? ` (${data.length}${data.length === 50 ? '+' : ''})` : '';
+    }
+
+    discussionBody.oninput = () => { discussionMsgCount.textContent = `${discussionBody.value.length}/500`; };
+
+    discussionPostBtn.onclick = async () => {
+      if (!currentTarget) return;
+      const last = Number(localStorage.getItem('lastCommentPost') || 0);
+      if (Date.now() - last < 30000) {
+        discussionStatus.textContent = 'Please wait a few seconds before posting again.';
+        return;
+      }
+      const nickname = discussionNickname.value.trim().slice(0, 30);
+      const body = discussionBody.value.trim().slice(0, 500);
+      if (!body) return;  // ignore empty posts
+      const postedLabel = currentTarget.label;  // the field might change while the insert is in flight
+      discussionPostBtn.disabled = true;
+      const { error } = await sb.from('comments').insert({
+        field_id: currentTarget.id,
+        band: currentBand,
+        nickname: nickname || null,
+        body: body
+      });
+      discussionPostBtn.disabled = false;
+      if (error) {
+        console.error(error);
+        discussionStatus.textContent = 'Could not post right now. Please try again later.';
+        return;
+      }
+      localStorage.setItem('lastCommentPost', String(Date.now()));
+      discussionNickname.value = '';
+      discussionBody.value = '';
+      discussionMsgCount.textContent = '0/500';
+      discussionStatus.textContent = `Thanks! Your post about ${postedLabel} will appear after review.`;
+    };
 
     function renderFieldInfo(t) {
       const f = fields[t.id];
@@ -600,6 +860,16 @@
     function renderProgress() {
       progressBadge.textContent = `Sky Scout: ${done.length} field${done.length === 1 ? '' : 's'} checked`;
     }
+
+    // ----- Browse / Discussion / About tabs -----
+    const tabBtns = document.querySelectorAll('.tabBtn');
+    const tabPanels = document.querySelectorAll('.tabPanel');
+    tabBtns.forEach(btn => {
+      btn.onclick = () => {
+        tabBtns.forEach(b => b.classList.toggle('active', b === btn));
+        tabPanels.forEach(p => p.style.display = (p.id === btn.dataset.tab) ? 'flex' : 'none');
+      };
+    });
 
     // ----- tutorial / "how we checked this" modal -----
     const TUTORIAL_STEPS = [
@@ -681,6 +951,13 @@
     }
     function bandCode(full) { return full ? full.replace('SPHEREx-', '') : full; }
     function fullBand(code) { return 'SPHEREx-' + code; }
+    // display-only label -- internal data (hash, Supabase, flags.json, filenames)
+    // still uses "D1".."D6" everywhere; this is purely what the user sees
+    function displayBand(input) {
+      const code = bandCode(input);
+      const m = code && /^D(\d)$/.exec(code);
+      return m ? `Band ${m[1]}` : (input || '');
+    }
     function defaultBand(t) {
       const b = bandsOf(t);
       if (!b) return null;
@@ -698,9 +975,10 @@
       i = n;
       const f = frames[i];
       frameImg.src = (currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url;
-      info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${f.time.slice(0, 10)} · band ${f.band}`;
+      info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${f.time.slice(0, 10)} · ${displayBand(f.band)}`;
       timelineDate.textContent = f.time.slice(0, 10);
       slider.value = i;
+      try { updateFlagOverlay(); } catch (e) { console.error('flag overlay update failed:', e); }
     }
     function renderTimelineEnds() {
       timelineStart.textContent = frames[0].time.slice(0, 10);
@@ -732,6 +1010,16 @@
         return ready.then(() => { loaded++; loadingLabel.textContent = `Loading photos... ${loaded} of ${urls.length}`; });
       }));
       loadingLabel.style.display = 'none';
+
+      // flag overlays preload separately and NEVER gate playback -- a slow,
+      // missing or failed (onerror) flag image just means no overlay that frame
+      list.forEach(f => {
+        const flagUrl = flagUrlForFrame(f);
+        if (!flagUrl) return;
+        const flagImg = new Image();
+        flagImg.onerror = () => {};
+        flagImg.src = flagUrl;
+      });
     }
 
     // address bar: #id/band/mode, or just #id for a target with no bands
@@ -740,23 +1028,48 @@
       if (push && location.hash !== '#' + tag) history.pushState(null, '', '#' + tag);
     }
 
-    // exact wording as given -- what each band is useful for seeing
+    // exact wording as given -- what each band is useful for seeing.
+    // prefix is "Band N (detector DN, a-b µm)"; the rest of each sentence is unchanged
     const BAND_DESCRIPTIONS = {
-      D1: 'D1 (0.75-1.09 um): Mostly starlight and distant galaxies. Asteroids show up by reflected sunlight.',
-      D2: 'D2 (1.10-1.62 um): Mostly starlight and galaxies. Sees through some dust better than visible light.',
-      D3: 'D3 (1.63-2.41 um): Starlight, plus cooler stars and warm dust start to show.',
-      D4: 'D4 (2.42-3.82 um): Includes the 3.0 um water-ice feature and the 3.28 um PAH (organic dust) feature.',
-      D5: 'D5 (3.83-4.41 um): Includes the 4.27 um carbon-dioxide ice feature.',
-      D6: 'D6 (4.42-5.00 um): Includes the 4.67 um carbon-monoxide ice feature. Warm objects glow here.',
+      D1: 'Band 1 (detector D1, 0.75-1.09 µm): Mostly starlight and distant galaxies. Asteroids show up by reflected sunlight.',
+      D2: 'Band 2 (detector D2, 1.10-1.62 µm): Mostly starlight and galaxies. Sees through some dust better than visible light.',
+      D3: 'Band 3 (detector D3, 1.63-2.41 µm): Starlight, plus cooler stars and warm dust start to show.',
+      D4: 'Band 4 (detector D4, 2.42-3.82 µm): Includes the 3.0 um water-ice feature and the 3.28 um PAH (organic dust) feature.',
+      D5: 'Band 5 (detector D5, 3.83-4.41 µm): Includes the 4.27 um carbon-dioxide ice feature.',
+      D6: 'Band 6 (detector D6, 4.42-5.00 µm): Includes the 4.67 um carbon-monoxide ice feature. Warm objects glow here.',
+    };
+
+    // exact wording as given -- possible spectral features in each band
+    const BAND_FEATURES = {
+      D1: 'Rocky asteroids show silicate (olivine, pyroxene) absorption near 1.0 µm. Cool stars show TiO and metal-hydride features.',
+      D2: 'Water-vapour "steam" absorption near 1.4 µm and FeH near 1.2 µm in cool stars and brown dwarfs; hydrogen Paschen-beta at 1.28 µm.',
+      D3: 'Pyroxene absorption near 2.0 µm in some asteroids; water absorption near 1.9 µm; hydrogen Paschen-alpha (1.88 µm) and Brackett-gamma (2.17 µm) in star-forming galaxies and glowing gas; CO overtone absorption from about 2.3 µm in cool stars.',
+      D4: 'The ~2.7 µm hydration feature in carbonaceous asteroids; water ice near 3.0 µm; PAH emission at 3.3 µm and organic/methanol ice features near 3.4-3.5 µm; thermal emission begins past ~3.5 µm.',
+      D5: 'Carbon dioxide ice at 4.27 µm and hydrogen Brackett-alpha at 4.05 µm. Thermal glow from main-belt asteroids and warm dust becomes important here.',
+      D6: 'Carbon monoxide (CO) ice and gas near 4.7 µm. Thermal emission from warm dust, comets and asteroids is strong here.',
+    };
+
+    // collapsed behind a "Features" toggle (instead of letting the panel scroll
+    // further) since the text is long enough on some bands to push past the no-scroll budget
+    let featuresOpen = false;
+    bandFeaturesToggle.onclick = (e) => {
+      e.preventDefault();
+      featuresOpen = !featuresOpen;
+      bandFeaturesBox.style.display = featuresOpen ? 'block' : 'none';
+      bandFeaturesToggle.textContent = featuresOpen ? 'Features ▴' : 'Features ▾';
     };
 
     function renderBandRow(t) {
       const b = bandsOf(t);
       bandRow.innerHTML = '';
+      featuresOpen = false;
+      bandFeaturesBox.style.display = 'none';
+      bandFeaturesToggle.textContent = 'Features ▾';
       if (!b) {
         bandRow.style.display = 'none';
         bandNote.style.display = 'none';
         bandDesc.style.display = 'none';
+        bandFeaturesRow.style.display = 'none';
         bandIceHint.style.display = 'none';
         return;
       }
@@ -764,12 +1077,15 @@
       bandNote.style.display = 'block';
       bandDesc.textContent = BAND_DESCRIPTIONS[bandCode(currentBand)] || '';
       bandDesc.style.display = 'block';
+      const features = BAND_FEATURES[bandCode(currentBand)];
+      bandFeatures.textContent = features ? `Possible features in this range: ${features}` : '';
+      bandFeaturesRow.style.display = features ? 'block' : 'none';
       bandIceHint.style.display = 'block';
       Object.keys(b).sort().forEach(key => {
         const btn = document.createElement('button');
         btn.className = 'pillBtn' + (key === currentBand ? ' active' : '');
         const code = document.createElement('span');
-        code.textContent = bandCode(key);
+        code.textContent = displayBand(key);
         btn.appendChild(code);
         const range = t.band_ranges && t.band_ranges[key];
         if (range) {
@@ -843,8 +1159,10 @@
       renderBandRow(t);
       renderModeRow();
       updateGifLink();
+      updateFlagsControlVisibility();
       updateHash(push);
       renderList();
+      refreshDiscussion();
       return true;
     }
 
@@ -1000,18 +1318,34 @@
       updateHash(true);
     };
 
+    // photo only, unless the flags overlay is on -- then composite it in first
+    function composedCanvas() {
+      const canvas = document.createElement('canvas');
+      canvas.width = frameImg.naturalWidth;
+      canvas.height = frameImg.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(frameImg, 0, 0);
+      if (flagOverlay.style.display !== 'none' && flagOverlay.src) {
+        ctx.globalAlpha = .55;
+        ctx.drawImage(flagOverlay, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+      }
+      return canvas;
+    }
+
     downloadBtn.onclick = () => {
       const f = frames[i];
-      downloadUrl((currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url);
+      const url = (currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url;
+      if (flagOverlay.style.display === 'none') { downloadUrl(url); return; }
+      const a = document.createElement('a');
+      a.href = composedCanvas().toDataURL('image/png');
+      a.download = url.split('/').pop();
+      a.click();
     };
 
     copyImgBtn.onclick = async () => {
       try {
-        const canvas = document.createElement('canvas');
-        canvas.width = frameImg.naturalWidth;
-        canvas.height = frameImg.naturalHeight;
-        canvas.getContext('2d').drawImage(frameImg, 0, 0);
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const blob = await new Promise(resolve => composedCanvas().toBlob(resolve, 'image/png'));
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         copyImgBtn.textContent = 'Copied';
       } catch (e) {
@@ -1031,6 +1365,17 @@
       if (!undone.length) { statusP.textContent = 'You have done every field!'; return; }
       openField(undone[Math.floor(Math.random() * undone.length)].id, true);
     };
+    document.getElementById('resetProgressLink').onclick = (e) => {
+      e.preventDefault();
+      if (!confirm('Reset your progress? This clears your "done" list and shows the tutorial again next time.')) return;
+      localStorage.removeItem('done');
+      localStorage.removeItem('tutorialSeen');
+      done = [];
+      renderProgress();
+      renderList();
+      statusP.textContent = 'Progress reset.';
+    };
+
     document.getElementById('copyBtn').onclick = () => {
       const btn = document.getElementById('copyBtn');
       navigator.clipboard.writeText(location.href)
@@ -1068,19 +1413,42 @@
 
     // scroll hint: hide each panel's bottom fade once it's scrolled to the bottom,
     // or if its content doesn't overflow in the first place
-    [['answerCol', 'answerFade'], ['browseCol', 'browseFade']].forEach(([panelId, fadeId]) => {
-      const panel = document.getElementById(panelId);
+    function setupScrollFade(fadeId, getScrollEl) {
       const fade = document.getElementById(fadeId);
       const update = () => {
-        const atBottom = panel.scrollHeight - panel.scrollTop - panel.clientHeight < 2;
-        const scrollable = panel.scrollHeight > panel.clientHeight + 1;
+        const el = getScrollEl();
+        if (!el) { fade.classList.add('hidden'); return; }
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 2;
+        const scrollable = el.scrollHeight > el.clientHeight + 1;
         fade.classList.toggle('hidden', !scrollable || atBottom);
       };
-      panel.addEventListener('scroll', update);
-      window.addEventListener('resize', update);
-      new MutationObserver(update).observe(panel, { childList: true, subtree: true });
-      update();
+      return update;
+    }
+
+    // #answerCol scrolls itself directly (no tabs there)
+    const updateAnswerFade = setupScrollFade('answerFade', () => answerCol);
+    answerCol.addEventListener('scroll', updateAnswerFade);
+    window.addEventListener('resize', updateAnswerFade);
+    new MutationObserver(updateAnswerFade).observe(answerCol, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['style']
     });
+    updateAnswerFade();
+
+    // #browseCol's active tab panel scrolls itself (the Discussion tab delegates
+    // to #commentsList specifically, since the panel itself no longer scrolls)
+    const updateBrowseFade = setupScrollFade('browseFade', () => {
+      const activeBtn = document.querySelector('#browseCol .tabBtn.active');
+      const tabId = activeBtn ? activeBtn.dataset.tab : 'browseTab';
+      return tabId === 'discussionTab' ? commentsList : document.getElementById(tabId);
+    });
+    ['browseTab', 'discussionTab', 'aboutTab'].forEach(id => document.getElementById(id).addEventListener('scroll', updateBrowseFade));
+    commentsList.addEventListener('scroll', updateBrowseFade);
+    window.addEventListener('resize', updateBrowseFade);
+    new MutationObserver(updateBrowseFade).observe(browseCol, {
+      childList: true, subtree: true, attributes: true, attributeFilter: ['style']
+    });
+    tabBtns.forEach(btn => btn.addEventListener('click', () => setTimeout(updateBrowseFade, 0)));
+    updateBrowseFade();
 
     renderProgress();
 
@@ -1088,6 +1456,11 @@
       .then(r => r.ok ? r.json() : {})
       .then(data => { fields = data; if (currentTarget) renderFieldInfo(currentTarget); })
       .catch(() => { fields = {}; });
+
+    fetch('flags.json')
+      .then(r => r.ok ? r.json() : {})
+      .then(data => { flagsData = data; if (currentTarget) { updateFlagsControlVisibility(); updateFlagOverlay(); } })
+      .catch(() => { flagsData = {}; });
 
     fetch('targets.json')
       .then(r => r.json())
