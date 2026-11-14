@@ -26,10 +26,20 @@ MAX_S3_FALLBACKS_PER_TARGET = 15
 
 OUT_SHAPE = (128, 128)  # shared pixel grid every frame of a target gets reprojected onto
 
-# one band for every target, so the whole site is consistent. Falls back to the
-# target's most common band only if it has fewer than MIN_BAND_FRAMES in BAND.
-BAND = "SPHEREx-D2"
-MIN_BAND_FRAMES = 30
+BANDS = ["D1", "D2", "D3", "D4", "D5", "D6"]
+MIN_BAND_FRAMES = 30       # D2 is the primary band, used by the current page
+MIN_OTHER_BAND_FRAMES = 10  # the other five are extra, lower bar
+
+# micron edges per IRSA's SPHEREx Data Explorer overview (rounded from the
+# Explanatory Supplement's 0.744-5.002um full-mission coverage)
+BAND_RANGES_UM = {
+    "SPHEREx-D1": [0.75, 1.09],
+    "SPHEREx-D2": [1.10, 1.62],
+    "SPHEREx-D3": [1.63, 2.41],
+    "SPHEREx-D4": [2.42, 3.82],
+    "SPHEREx-D5": [3.83, 4.41],
+    "SPHEREx-D6": [4.42, 5.00],
+}
 
 
 def download(url, out_path, tries=3):
@@ -75,7 +85,27 @@ def build_target_wcs(ra, dec, size, npix=128):
     return w
 
 
-def make_png(url, raw_uri, fits_path, png_path, coord, request_size, target_wcs, s3_fallbacks_used, edge_drops):
+def migrate_flat_cache(target_id, size_tag, band_code="D2"):
+    """Older runs (before per-band folders) cached files directly under
+    data|img/<id>/<size_tag>/. Move them under .../<band_code>/ so they're
+    reused instead of re-downloaded."""
+    for root in ("data", "img"):
+        flat_dir = f"{root}/{target_id}/{size_tag}"
+        if not os.path.isdir(flat_dir):
+            continue
+        band_dir = f"{flat_dir}/{band_code}"
+        loose_files = [f for f in os.listdir(flat_dir) if os.path.isfile(f"{flat_dir}/{f}")]
+        if not loose_files:
+            continue
+        os.makedirs(band_dir, exist_ok=True)
+        for fname in loose_files:
+            shutil.move(f"{flat_dir}/{fname}", f"{band_dir}/{fname}")
+        print(f"migrated {len(loose_files)} files: {flat_dir}/*  ->  {band_dir}/")
+
+
+def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, s3_fallbacks_used, edge_drops):
+    """Download (or reuse the cached FITS) and reproject onto the target's shared
+    grid. Returns the reprojected array, or None if the frame should be skipped."""
     if os.path.exists(fits_path):
         with fits.open(fits_path) as hdul:
             img = hdul["IMAGE"].data.astype(float)
@@ -87,14 +117,14 @@ def make_png(url, raw_uri, fits_path, png_path, coord, request_size, target_wcs,
     else:
         if s3_fallbacks_used[0] >= MAX_S3_FALLBACKS_PER_TARGET:
             print("S3 fallback budget exhausted, skipping frame")
-            return False
+            return None
         print("S3 fallback")
         s3_fallbacks_used[0] += 1
         try:
             img, wcs = s3_lazy_cutout(raw_uri, coord, request_size)
         except Exception as e:
             print(f"S3 lazy read failed ({e}), skipping frame (not downloading full file)")
-            return False
+            return None
 
     # put every frame on the same sky grid, so brightness/position changes
     # between frames are real, not just each exposure's own pointing/roll
@@ -104,24 +134,69 @@ def make_png(url, raw_uri, fits_path, png_path, coord, request_size, target_wcs,
     if nan_frac > 0.02:
         edge_drops[0] += 1
         print(f"frame hits detector edge (nan_frac={nan_frac:.1%}), skipping")
-        return False
+        return None
+    return img
 
-    img = np.nan_to_num(img, nan=np.nanmedian(img))
-    lo, hi = np.percentile(img, [1, 99])
+
+def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames):
+    """Fetch+reproject every frame of one band, then apply one shared
+    background-subtract + percentile stretch across the whole stack, so
+    brightness is consistent frame to frame instead of each frame being
+    stretched to its own contrast."""
+    band_full = f"SPHEREx-{band_code}"
+    data_dir = f"data/{target_id}/{size_tag}/{band_code}"
+    img_dir = f"img/{target_id}/{size_tag}/{band_code}"
+    os.makedirs(data_dir, exist_ok=True)
+    os.makedirs(img_dir, exist_ok=True)
+
+    s3_fallbacks_used = [0]  # mutable int, shared across this band's fetch calls
+    edge_drops = [0]
+    collected = []  # (png_path, time_iso, img)
+    for row in frames:
+        # stable id from the filename IRSA/S3 already gave this exposure, so a
+        # cached file always matches the frame it was downloaded for, even if
+        # a later run samples a different subset of frames
+        stable_id = os.path.splitext(os.path.basename(row["raw_uri"]))[0]
+        fits_path = f"{data_dir}/{stable_id}.fits"
+        png_path = f"{img_dir}/{stable_id}.png"
+        img = fetch_reprojected(row["uri"], row["raw_uri"], fits_path, coord, request_size, target_wcs,
+                                 s3_fallbacks_used, edge_drops)
+        if img is not None:
+            time_iso = Time(row["time_bounds_lower"], format="mjd").isot  # MJD days -> ISO for the frontend
+            collected.append((png_path, time_iso, img))
+        time.sleep(1)  # be polite to IRSA
+
+    print(f"{target_id}/{band_code}: {len(collected)}/{len(frames)} frames succeeded, "
+          f"{edge_drops[0]} dropped for hitting detector edge")
+    if not collected:
+        return []
+
+    bg_subbed = [img - np.nanmedian(img) for _, _, img in collected]
+    stack = np.array(bg_subbed)
+    lo, hi = np.nanpercentile(stack, [1, 99.5])
     if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
-        return False  # degenerate frame (e.g. all-NaN), skip it
-    img = np.clip((img - lo) / (hi - lo), 0, 1)
-    img = np.arcsinh(10 * img) / np.arcsinh(10)     # brings out faint stuff
-    img = np.flipud(img)                            # FITS has y flipped
-    Image.fromarray((img * 255).astype(np.uint8)).save(png_path)
-    return True
+        print(f"{target_id}/{band_code}: degenerate stack stats, skipping band")
+        return []
+
+    out_frames = []
+    for (png_path, time_iso, _), img_sub in zip(collected, bg_subbed):
+        scaled = np.clip((img_sub - lo) / (hi - lo), 0, 1)
+        scaled = np.arcsinh(10 * scaled) / np.arcsinh(10)   # brings out faint stuff
+        scaled = np.nan_to_num(scaled, nan=0.0)
+        scaled = np.flipud(scaled)                          # FITS has y flipped
+        Image.fromarray((scaled * 255).astype(np.uint8)).save(png_path)
+        out_frames.append({"url": png_path, "time": time_iso, "band": band_full})
+    return out_frames
 
 
-def process_target(target_id, ra, dec, label, size=0.2, max_frames=40):
+def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, bands=None):
+    bands = bands if bands is not None else BANDS
     coord = SkyCoord(ra=ra, dec=dec, unit="deg")
     request_size = size * 1.5  # request more than the display size so reprojection has margin
     target_wcs = build_target_wcs(ra, dec, size, npix=OUT_SHAPE[0])
     size_tag = f"{size:g}".replace(".", "p")  # e.g. 0.2 -> "0p2", keeps caches from different sizes apart
+
+    migrate_flat_cache(target_id, size_tag)  # old single-band cache -> .../D2/
 
     query = f"""
     SELECT
@@ -138,51 +213,43 @@ def process_target(target_id, ra, dec, label, size=0.2, max_frames=40):
     results = Irsa.query_tap(query).to_table()
     print(f"{target_id}: TAP found {len(results)} frames")
 
-    # same bandpass only, so frame-to-frame brightness changes aren't just band effects
-    band = BAND
-    frames = results[results["energy_bandpassname"] == band]
-    if len(frames) < MIN_BAND_FRAMES:
-        band = Counter(results["energy_bandpassname"]).most_common(1)[0][0]
-        frames = results[results["energy_bandpassname"] == band]
-        print(f"{target_id}: only few {BAND} frames, falling back to {band}")
-    print(f"{target_id}: using band {band}, {len(frames)} frames")
+    bands_out = {}
+    for band_code in bands:
+        band_full = f"SPHEREx-{band_code}"
+        frames = results[results["energy_bandpassname"] == band_full]
+        min_needed = MIN_BAND_FRAMES if band_code == "D2" else MIN_OTHER_BAND_FRAMES
+        if len(frames) < min_needed:
+            print(f"SKIP {target_id} {band_code}: only {len(frames)} frames (< {min_needed})")
+            continue
 
-    if len(frames) > max_frames:
-        # frames is already time-sorted; spread picks across the full span
-        # instead of clustering near the start, so the blink viewer still
-        # covers the whole observing window
-        idx = np.unique(np.linspace(0, len(frames) - 1, max_frames).round().astype(int))
-        frames = frames[idx]
-        print(f"{target_id}: sampled down to {len(frames)} frames across full time range")
+        if len(frames) > max_frames:
+            # frames is already time-sorted; spread picks across the full span
+            # instead of clustering near the start, so the blink viewer still
+            # covers the whole observing window
+            idx = np.unique(np.linspace(0, len(frames) - 1, max_frames).round().astype(int))
+            frames = frames[idx]
+            print(f"{target_id}/{band_code}: sampled down to {len(frames)} frames across full time range")
 
-    os.makedirs(f"data/{target_id}/{size_tag}", exist_ok=True)
-    os.makedirs(f"img/{target_id}/{size_tag}", exist_ok=True)
+        out_frames = process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames)
+        if out_frames:
+            bands_out[band_full] = out_frames
 
-    s3_fallbacks_used = [0]  # mutable int, shared across the loop's make_png calls
-    edge_drops = [0]
-    out_frames = []
-    for row in frames:
-        # stable id from the filename IRSA/S3 already gave this exposure, so a
-        # cached file always matches the frame it was downloaded for, even if
-        # a later run samples a different subset of frames
-        stable_id = os.path.splitext(os.path.basename(row["raw_uri"]))[0]
-        fits_path = f"data/{target_id}/{size_tag}/{stable_id}.fits"
-        png_path = f"img/{target_id}/{size_tag}/{stable_id}.png"
-        ok = make_png(row["uri"], row["raw_uri"], fits_path, png_path, coord, request_size, target_wcs, s3_fallbacks_used, edge_drops)
-        if ok:
-            # time_bounds_lower is MJD (days); convert to ISO for the frontend
-            time_iso = Time(row["time_bounds_lower"], format="mjd").isot
-            out_frames.append({"url": png_path, "time": time_iso, "band": band})
-        time.sleep(1)  # be polite to IRSA
-
-    print(f"{target_id}: {len(out_frames)}/{len(frames)} frames succeeded, {edge_drops[0]} dropped for hitting detector edge")
-    if not out_frames:
+    if not bands_out:
         return None
-    return {"id": target_id, "label": label, "ra": ra, "dec": dec, "band": band, "frames": out_frames}
+
+    return {
+        "id": target_id,
+        "label": label,
+        "ra": ra,
+        "dec": dec,
+        "frames": bands_out.get("SPHEREx-D2", []),  # keeps the current page working off D2
+        "bands": bands_out,
+        "band_ranges": BAND_RANGES_UM,
+    }
 
 
 def count_frames(ra, dec):
-    """TAP query only, no downloads -- frames per band, plus the time span of BAND frames."""
+    """TAP query only, no downloads -- frames per band, plus D2's time span."""
     coord = SkyCoord(ra=ra, dec=dec, unit="deg")
     query = f"""
     SELECT p.energy_bandpassname, p.time_bounds_lower
@@ -192,10 +259,10 @@ def count_frames(ra, dec):
     """
     results = Irsa.query_tap(query).to_table()
     counts = Counter(results["energy_bandpassname"])
-    in_band = results[results["energy_bandpassname"] == BAND]
+    in_d2 = results[results["energy_bandpassname"] == "SPHEREx-D2"]
     span = None
-    if len(in_band):
-        t = in_band["time_bounds_lower"]
+    if len(in_d2):
+        t = in_d2["time_bounds_lower"]
         span = (Time(float(np.min(t)), format="mjd").isot[:10],
                 Time(float(np.max(t)), format="mjd").isot[:10])
     return counts, span
@@ -205,10 +272,11 @@ def count_all_targets():
     for target_id, ra, dec, label in TARGETS:
         counts, span = count_frames(ra, dec)
         print(f"{target_id} ({label}):")
-        for band, n in counts.most_common():
-            print(f"  {band}: {n}")
+        for band_code in BANDS:
+            n = counts.get(f"SPHEREx-{band_code}", 0)
+            print(f"  {band_code}: {n}")
         if span:
-            print(f"  {BAND} observed {span[0]} to {span[1]}")
+            print(f"  D2 observed {span[0]} to {span[1]}")
 
 
 TARGETS_JSON = "targets.json"
@@ -246,6 +314,7 @@ def clean():
 TARGETS = [
     # (id, ra, dec, label)
     ("test", 210.80227, 54.34895, "Test field"),
+    ("m101", 210.80227, 54.34895, "M101 (Pinwheel Galaxy)"),
     # ecliptic-plane fields, best odds of catching a passing asteroid
     ("pleiades", 56.75, 24.12, "Pleiades"),
     ("beehive", 130.10, 19.67, "Beehive Cluster (M44)"),
@@ -261,11 +330,12 @@ TARGETS = [
 TEST_MAX_FRAMES = 5
 
 # Usage:
-#   python prep/test_one.py --count              frames per band + time span, no downloads
-#   python prep/test_one.py --clean              delete data/, img/, targets.json (asks first)
-#   python prep/test_one.py --only pleiades      run just one target (5 frames)
-#   python prep/test_one.py --only pleiades --full
-#   python prep/test_one.py --full               all targets, up to 40 frames each
+#   python prep/test_one.py --count                   frames per band + D2 time span, no downloads
+#   python prep/test_one.py --clean                    delete data/, img/, targets.json (asks first)
+#   python prep/test_one.py --only pleiades             run just one target (5 frames/band)
+#   python prep/test_one.py --only pleiades --full       all bands, up to 40 frames/band
+#   python prep/test_one.py --only pleiades --bands D1,D2 --full   only those bands
+#   python prep/test_one.py --full                      all targets, all bands
 if __name__ == "__main__":
     import sys
 
@@ -281,7 +351,14 @@ if __name__ == "__main__":
     if "--only" in sys.argv:
         only = sys.argv[sys.argv.index("--only") + 1]
 
-    kwargs = {} if "--full" in sys.argv else {"max_frames": TEST_MAX_FRAMES}
+    bands = BANDS
+    if "--bands" in sys.argv:
+        bands = sys.argv[sys.argv.index("--bands") + 1].split(",")
+
+    kwargs = {"bands": bands}
+    if "--full" not in sys.argv:
+        kwargs["max_frames"] = TEST_MAX_FRAMES
+
     for target_id, ra, dec, label in TARGETS:
         if only and target_id != only:
             continue

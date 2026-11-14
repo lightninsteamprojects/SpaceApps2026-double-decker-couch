@@ -2,31 +2,208 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SPHEREx Sky Blink</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    body  { background: #0b1020; color: #e8ecf5; font-family: sans-serif; text-align: center; }
-    #frame { width: 512px; height: 512px; border: 1px solid #3a4668; }
-    button { font-size: 16px; padding: 10px 16px; margin: 4px; }
+    :root {
+      --bg: #0f1218;
+      --box: #171b24;
+      --line: #2a303d;
+      --text: #e8eaee;
+      --muted: #98a0b0;
+      --accent: #5b9bff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    header {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 24px 20px 8px;
+    }
+    header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+    header p  { margin: 4px 0 0; color: var(--muted); }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 16px 20px 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 28px;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    /* ----- viewer ----- */
+    #heading { margin: 0 0 10px; font-size: 20px; font-weight: 600; }
+
+    #frame {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      image-rendering: pixelated;   /* keeps the real pixels sharp */
+      background: #000;
+      border: 1px solid var(--line);
+    }
+
+    #info { margin: 10px 0 0; color: var(--muted); font-size: 14px; min-height: 1.5em; }
+
+    .controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+
+    button {
+      font: inherit;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 14px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); }
+    button:disabled { opacity: .5; cursor: wait; }
+
+    #playBtn { width: 80px; }
+    #slider { flex: 1; accent-color: var(--accent); }
+
+    /* ----- side panel ----- */
+    aside h2 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
+    aside p  { margin: 0 0 12px; color: var(--muted); }
+    aside .section { margin-bottom: 26px; }
+
+    .answers { display: flex; flex-direction: column; gap: 8px; }
+    .answers button { text-align: left; }
+
+    #status { min-height: 1.5em; margin: 10px 0 0; color: var(--accent); font-size: 14px; }
+
+    aside ul.tips { margin: 0; padding-left: 20px; color: var(--muted); }
+    aside ul.tips li { margin-bottom: 6px; }
+
+    /* ----- browse fields ----- */
+    #search {
+      width: 100%;
+      font: inherit;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 12px;
+      margin-bottom: 8px;
+    }
+    #search:focus { outline: none; border-color: var(--accent); }
+
+    #fieldList {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    #fieldList li {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+    }
+    #fieldList li:last-child { border-bottom: 0; }
+    #fieldList li:hover { background: var(--box); }
+    #fieldList li.active { background: var(--box); color: var(--accent); }
+    #fieldList li .done { color: var(--muted); font-size: 13px; }
+    #noMatch { color: var(--muted); font-size: 14px; margin: 8px 0 0; display: none; }
+
+    .row { display: flex; gap: 8px; margin-top: 8px; }
+
+    footer {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px 32px;
+      color: var(--muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
-  <h1 id="heading">Loading...</h1>
-  <img id="frame" alt="sky frame">
-  <p id="info"></p>
-  <div>
-    <button id="playBtn">Pause</button>
-    <input id="slider" type="range" min="0" value="0">
-  </div>
 
-  <h3>Did anything move or change?</h3>
-  <div>
-    <button onclick="submitAnswer('moved')">Something moved</button>
-    <button onclick="submitAnswer('brightness')">Something changed brightness</button>
-    <button onclick="submitAnswer('nothing')">Nothing changed</button>
-    <button onclick="submitAnswer('bad_image')">Bad image</button>
-  </div>
-  <p id="status"></p>
+  <header>
+    <h1>SPHEREx Sky Blink</h1>
+    <p>The same patch of sky, photographed on different dates. Can you spot what changed?</p>
+  </header>
+
+  <main>
+
+    <!-- left: images -->
+    <section>
+      <h2 id="heading">Loading...</h2>
+      <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
+      <div id="info"></div>
+      <div class="controls">
+        <button id="playBtn">Pause</button>
+        <input id="slider" type="range" min="0" value="0" aria-label="Frame">
+      </div>
+    </section>
+
+    <!-- right: instructions, answers, browse -->
+    <aside>
+      <div class="section">
+        <h2>What to look for</h2>
+        <p>The photos flip through one spot in the sky. Stars stay in the same place. Watch for:</p>
+        <ul class="tips">
+          <li>a bright spot that <b>moves</b> from photo to photo</li>
+          <li>a bright spot that gets <b>brighter or fainter</b></li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>What did you see?</h2>
+        <div class="answers">
+          <button onclick="submitAnswer('moved')">A bright spot moved</button>
+          <button onclick="submitAnswer('brightness')">A bright spot changed brightness</button>
+          <button onclick="submitAnswer('nothing')">Nothing changed</button>
+          <button onclick="submitAnswer('bad_image')">Bad image (blurry or cut off)</button>
+        </div>
+        <div id="status" role="status" aria-live="polite"></div>
+      </div>
+
+      <div class="section">
+        <h2>Browse fields</h2>
+        <input id="search" type="search" placeholder="Search fields..." autocomplete="off">
+        <ul id="fieldList"></ul>
+        <p id="noMatch">No fields match.</p>
+        <div class="row">
+          <button id="randomBtn">Random field</button>
+          <button id="copyBtn">Copy link</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>About</h2>
+        <p>SPHEREx is a NASA space telescope that maps the whole sky in infrared light. Each answer you give is saved, so we can see where people agree.</p>
+      </div>
+    </aside>
+
+  </main>
+
+  <footer>
+    Images: NASA SPHEREx, via the NASA/IPAC Infrared Science Archive. Made for NASA Space Apps Challenge 2026.
+  </footer>
 
   <script>
     // --- Supabase (note: URL has no /rest/v1/ on the end) ---
@@ -39,6 +216,10 @@
     const sessionId = localStorage.getItem('sid') || crypto.randomUUID();
     localStorage.setItem('sid', sessionId);
 
+    // fields this browser has already answered
+    let done = [];
+    try { done = JSON.parse(localStorage.getItem('done') || '[]'); } catch (e) { done = []; }
+
     // --- page elements ---
     const frameImg = document.getElementById('frame');
     const heading  = document.getElementById('heading');
@@ -46,6 +227,10 @@
     const playBtn  = document.getElementById('playBtn');
     const slider   = document.getElementById('slider');
     const statusP  = document.getElementById('status');
+    const searchBox = document.getElementById('search');
+    const fieldList = document.getElementById('fieldList');
+    const noMatch   = document.getElementById('noMatch');
+    const answerBtns = document.querySelectorAll('.answers button');
 
     let targets = [];        // all targets from targets.json
     let currentTarget = null;
@@ -56,13 +241,16 @@
     function show(n) {
       i = n;
       frameImg.src = frames[i].url;
-      info.textContent = `Frame ${i + 1} of ${frames.length} · ${frames[i].time.slice(0, 10)} · ${frames[i].band}`;
+      info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${frames[i].time.slice(0, 10)} · band ${frames[i].band}`;
       slider.value = i;
     }
     function play()  { timer = setInterval(() => show((i + 1) % frames.length), 300); playBtn.textContent = 'Pause'; }
     function pause() { clearInterval(timer); timer = null; playBtn.textContent = 'Play'; }
 
-    function loadTarget(t) {
+    // open a field. push = true adds it to the page address (#id)
+    function openField(id, push) {
+      const t = targets.find(x => x.id === id);
+      if (!t) return false;
       pause();
       currentTarget = t;
       heading.textContent = t.label;
@@ -71,33 +259,106 @@
       slider.max = frames.length - 1;
       show(0);
       play();
+      if (push && location.hash !== '#' + id) history.pushState(null, '', '#' + id);
+      renderList();
+      return true;
     }
 
-    function nextTarget() {
-      loadTarget(targets[Math.floor(Math.random() * targets.length)]);
+    // pick a field we have not answered yet (not the current one)
+    function pickNext() {
+      let pool = targets.filter(t => !done.includes(t.id) && (!currentTarget || t.id !== currentTarget.id));
+      let allDone = false;
+      if (pool.length === 0) {
+        allDone = true;
+        pool = targets.filter(t => !currentTarget || t.id !== currentTarget.id);
+        if (pool.length === 0) pool = targets;
+      }
+      return { target: pool[Math.floor(Math.random() * pool.length)], allDone };
+    }
+
+    // ----- browse list -----
+    function renderList() {
+      const q = searchBox.value.trim().toLowerCase();
+      const shown = targets.filter(t => (t.label + ' ' + t.id).toLowerCase().includes(q));
+      fieldList.innerHTML = '';
+      shown.forEach(t => {
+        const li = document.createElement('li');
+        if (currentTarget && t.id === currentTarget.id) li.className = 'active';
+        const name = document.createElement('span');
+        name.textContent = t.label;
+        li.appendChild(name);
+        if (done.includes(t.id)) {
+          const d = document.createElement('span');
+          d.className = 'done';
+          d.textContent = 'done';
+          li.appendChild(d);
+        }
+        li.onclick = () => { statusP.textContent = ''; openField(t.id, true); };
+        fieldList.appendChild(li);
+      });
+      noMatch.style.display = shown.length ? 'none' : 'block';
     }
 
     async function submitAnswer(answer) {
+      if (!currentTarget) return;
+      answerBtns.forEach(b => b.disabled = true);
       const { error } = await sb.from('classifications').insert({
         target_id: currentTarget.id,
         answer: answer,
         session_id: sessionId
       });
+      answerBtns.forEach(b => b.disabled = false);
       if (error) {
         console.error(error);
         statusP.textContent = 'Could not save: ' + error.message;
         return;
       }
-      statusP.textContent = 'Saved. Here is another field.';
-      nextTarget();
+      if (!done.includes(currentTarget.id)) {
+        done.push(currentTarget.id);
+        localStorage.setItem('done', JSON.stringify(done));
+      }
+      const next = pickNext();
+      statusP.textContent = next.allDone
+        ? 'Saved. You have done every field. Here is one to look at again.'
+        : 'Saved. Here is another spot.';
+      openField(next.target.id, true);
     }
 
     playBtn.onclick = () => (timer ? pause() : play());
     slider.oninput  = () => { pause(); show(Number(slider.value)); };
+    searchBox.oninput = renderList;
+
+    document.getElementById('randomBtn').onclick = () => {
+      statusP.textContent = '';
+      openField(pickNext().target.id, true);
+    };
+    document.getElementById('copyBtn').onclick = () => {
+      const btn = document.getElementById('copyBtn');
+      navigator.clipboard.writeText(location.href)
+        .then(() => { btn.textContent = 'Copied'; setTimeout(() => btn.textContent = 'Copy link', 1500); })
+        .catch(() => { btn.textContent = 'Copy failed'; setTimeout(() => btn.textContent = 'Copy link', 1500); });
+    };
+
+    // back/forward buttons and edited addresses
+    window.addEventListener('popstate', () => {
+      const id = decodeURIComponent(location.hash.slice(1));
+      if (id) openField(id, false);
+    });
 
     fetch('targets.json')
       .then(r => r.json())
-      .then(data => { targets = data; nextTarget(); });
+      .then(data => {
+        targets = data;
+        const id = decodeURIComponent(location.hash.slice(1));
+        // open the field in the address if it exists, otherwise pick one
+        if (!(id && openField(id, false))) openField(pickNext().target.id, false);
+        renderList();
+      })
+      .catch(err => {
+        console.error(err);
+        heading.textContent = 'Could not load the photos';
+        statusP.textContent = 'Please refresh the page.';
+      });
   </script>
 </body>
 </html>
