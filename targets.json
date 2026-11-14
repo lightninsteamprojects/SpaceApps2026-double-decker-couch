@@ -943,5 +943,209 @@
         "band": "SPHEREx-D2"
       }
     ]
+  },
+  {
+    "id": "galactic_center",
+    "label": "Galactic Center region",
+    "ra": 266.4,
+    "dec": -28.94,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/galactic_center/0p2/level2_2025W34_2B_0587_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T15:14:05.424",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W34_2B_0587_2D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T15:16:14.333",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W34_2B_0587_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T15:20:32.150",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0323_1D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-26T14:33:22.896",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0323_3D2_spx_l2b_retry-v27-2026-230.png",
+        "time": "2025-08-26T14:37:40.714",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0323_4D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-26T14:39:49.709",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0445_4D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-27T06:53:55.248",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0523_3D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-27T16:42:11.635",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_1A_0523_4D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-27T16:44:22.099",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_2A_0173_1D2_spx_l2b-v27-2026-231.png",
+        "time": "2025-08-29T09:22:32.506",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_2A_0173_3D2_spx_l2b-v27-2026-231.png",
+        "time": "2025-08-29T09:26:50.323",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2025W35_2A_0173_4D2_spx_l2b-v27-2026-231.png",
+        "time": "2025-08-29T09:28:59.318",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0103_4D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-20T01:17:53.981",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0259_1D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-20T22:22:54.307",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0259_2D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-20T22:25:03.216",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0259_4D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-20T22:29:21.120",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0370_1D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-21T13:01:00.941",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0370_3D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-21T13:05:18.845",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0370_4D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-21T13:07:27.754",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W12_2A_0519_4D2_spx_l2b-v27-2026-235.png",
+        "time": "2026-03-22T08:41:03.926",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W13_1A_0009_2D2_spx_l2b-v27-2026-236.png",
+        "time": "2026-03-23T00:54:15.725",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W13_1A_0009_3D2_spx_l2b-v27-2026-236.png",
+        "time": "2026-03-23T00:56:24.720",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W13_1A_0113_1D2_spx_l2b-v27-2026-236.png",
+        "time": "2026-03-23T13:55:05.174",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W13_1A_0113_3D2_spx_l2b-v27-2026-236.png",
+        "time": "2026-03-23T13:59:23.078",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W13_1A_0301_1D2_spx_l2b-v27-2026-236.png",
+        "time": "2026-03-24T14:21:49.709",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_1A_0523_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-26T11:28:04.339",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_1A_0523_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-26T11:30:13.334",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_1A_0523_3D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-26T11:32:22.243",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0161_1D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-28T09:05:54.499",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0161_2D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-28T09:08:03.408",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0161_4D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-28T09:12:21.312",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0358_1D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-29T09:30:54.662",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0358_3D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-29T09:35:14.035",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W35_2A_0358_4D2_spx_l2b-v27-2026-246.png",
+        "time": "2026-08-29T09:37:22.944",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W36_1A_0006_1D2_spx_l2b-v27-2026-252.png",
+        "time": "2026-08-31T00:33:10.829",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W36_1A_0006_3D2_spx_l2b_retry-v27-2026-254.png",
+        "time": "2026-08-31T00:37:28.646",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W36_1A_0006_4D2_spx_l2b-v27-2026-252.png",
+        "time": "2026-08-31T00:39:37.555",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W36_1A_0294_1D2_spx_l2b-v27-2026-252.png",
+        "time": "2026-09-01T07:35:06.288",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/galactic_center/0p2/level2_2026W39_1A_0289_1D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-09-22T06:55:46.099",
+        "band": "SPHEREx-D2"
+      }
+    ]
   }
 ]
