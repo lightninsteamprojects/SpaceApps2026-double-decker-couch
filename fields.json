@@ -1,0 +1,35 @@
+{
+  "test": {"blurb": "", "fact": ""},
+  "pleiades": {
+    "blurb": "The Pleiades is a nearby cluster of young, hot stars, also called the Seven Sisters.",
+    "fact": "The cluster is only about 100 million years old, far younger than the Sun."
+  },
+  "m101": {
+    "blurb": "M101 is the Pinwheel Galaxy, a large spiral galaxy similar in shape to our own.",
+    "fact": "M101 is roughly twice the width of the Milky Way."
+  },
+  "beehive": {
+    "blurb": "The Beehive Cluster (M44) is an open star cluster visible to the naked eye.",
+    "fact": "It's one of the nearest open star clusters to the Sun."
+  },
+  "ecliptic0": {
+    "blurb": "This field lies in the ecliptic plane, the path the Sun and planets trace across the sky -- where most asteroids orbit too.",
+    "fact": "Fields on the ecliptic are where moving solar-system objects are most likely to turn up."
+  },
+  "ecliptic180": {
+    "blurb": "This field lies in the ecliptic plane, the path the Sun and planets trace across the sky -- where most asteroids orbit too.",
+    "fact": "Fields on the ecliptic are where moving solar-system objects are most likely to turn up."
+  },
+  "galactic_center": {
+    "blurb": "This field looks toward the center of the Milky Way galaxy.",
+    "fact": "The Milky Way's central supermassive black hole, Sagittarius A*, lies in this direction."
+  },
+  "north_pole": {
+    "blurb": "This field looks toward the north ecliptic pole, perpendicular to the plane of the solar system.",
+    "fact": "Being far from the ecliptic plane, this region sees very few asteroids or comets passing through."
+  },
+  "south_pole": {
+    "blurb": "This field looks toward the south ecliptic pole, perpendicular to the plane of the solar system.",
+    "fact": "Being far from the ecliptic plane, this region sees very few asteroids or comets passing through."
+  }
+}

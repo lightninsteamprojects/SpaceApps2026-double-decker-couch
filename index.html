@@ -168,6 +168,37 @@
 
     .row { display: flex; gap: 8px; margin-top: 8px; }
 
+    #progressBadge { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+    #fieldBlurb, #fieldFact { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
+    #fieldFact { font-style: italic; }
+
+    /* ----- modal (tutorial / how we checked this) ----- */
+    .modalOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+    .modalBox {
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 360px;
+      width: 100%;
+    }
+    .modalBox p { margin: 0 0 12px; }
+    .modalBox .row { justify-content: flex-end; }
+
+    .modalBox--tutorial { max-width: 420px; }
+    #tutorialStepCount { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+    #tutorialText { font-size: 17px; }
+
     footer {
       max-width: 1000px;
       margin: 0 auto;
@@ -182,6 +213,7 @@
   <header>
     <h1>SPHEREx Sky Blink</h1>
     <p>The same patch of sky, photographed on different dates. Can you spot what changed?</p>
+    <p id="progressBadge"></p>
   </header>
 
   <main>
@@ -189,6 +221,8 @@
     <!-- left: images -->
     <section>
       <h2 id="heading">Loading...</h2>
+      <p id="fieldBlurb" style="display:none"></p>
+      <p id="fieldFact" style="display:none"></p>
       <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
       <div id="info"></div>
       <div class="controls">
@@ -217,6 +251,7 @@
         <button id="copyImgBtn">Copy image</button>
         <button id="downloadGifBtn" style="display:none">Download GIF</button>
       </div>
+      <p class="hint"><a href="#" id="howCheckedLink">How we checked this</a></p>
       <p id="creditLine" class="hint">SPHEREx / NASA/IPAC IRSA</p>
     </section>
 
@@ -229,6 +264,7 @@
           <li>a bright spot that <b>moves</b> from photo to photo</li>
           <li>a bright spot that gets <b>brighter or fainter</b></li>
         </ul>
+        <p class="hint"><a href="#" id="howItWorksLink">How it works</a></p>
       </div>
 
       <div class="section">
@@ -270,6 +306,13 @@
     Images: NASA SPHEREx, via the NASA/IPAC Infrared Science Archive. Made for NASA Space Apps Challenge 2026.
   </footer>
 
+  <div id="modalOverlay" class="modalOverlay" style="display:none">
+    <div id="modalBox" class="modalBox">
+      <div id="modalBody"></div>
+      <div id="modalButtons" class="row"></div>
+    </div>
+  </div>
+
   <script>
     // --- Supabase (note: URL has no /rest/v1/ on the end) ---
     const sb = supabase.createClient(
@@ -309,6 +352,15 @@
     const downloadBtn = document.getElementById('downloadBtn');
     const copyImgBtn = document.getElementById('copyImgBtn');
     const downloadGifBtn = document.getElementById('downloadGifBtn');
+    const progressBadge = document.getElementById('progressBadge');
+    const fieldBlurb = document.getElementById('fieldBlurb');
+    const fieldFact = document.getElementById('fieldFact');
+    const howItWorksLink = document.getElementById('howItWorksLink');
+    const howCheckedLink = document.getElementById('howCheckedLink');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalBox = document.getElementById('modalBox');
+    const modalBody = document.getElementById('modalBody');
+    const modalButtons = document.getElementById('modalButtons');
 
     // image-rendering only changes how the browser displays the pixels; the
     // underlying PNG files are untouched either way
@@ -326,6 +378,91 @@
     let frames = [];
     let i = 0;
     let timer = null;
+    let fields = {};  // field id -> {blurb, fact}, from fields.json (optional)
+
+    function renderFieldInfo(t) {
+      const f = fields[t.id];
+      fieldBlurb.style.display = (f && f.blurb) ? 'block' : 'none';
+      if (f && f.blurb) fieldBlurb.textContent = f.blurb;
+      fieldFact.style.display = (f && f.fact) ? 'block' : 'none';
+      if (f && f.fact) fieldFact.textContent = f.fact;
+    }
+
+    function renderProgress() {
+      progressBadge.textContent = `Sky Scout: ${done.length} field${done.length === 1 ? '' : 's'} checked`;
+    }
+
+    // ----- tutorial / "how we checked this" modal -----
+    const TUTORIAL_STEPS = [
+      'These are photos of the same patch of sky.',
+      'Stars stay still; look for a spot that moves or changes.',
+      'Click what you saw.'
+    ];
+    let tutorialStep = 0;
+    let modalKind = null;  // 'tutorial' | 'howChecked' -- which modal is open, for the Escape handler
+
+    function closeModal() { modalOverlay.style.display = 'none'; modalBox.classList.remove('modalBox--tutorial'); }
+
+    function closeTutorial() { closeModal(); localStorage.setItem('tutorialSeen', '1'); }
+
+    function showTutorialStep() {
+      modalBody.innerHTML = '';
+      const count = document.createElement('p');
+      count.id = 'tutorialStepCount';
+      count.textContent = `Step ${tutorialStep + 1} of ${TUTORIAL_STEPS.length}`;
+      modalBody.appendChild(count);
+      const p = document.createElement('p');
+      p.id = 'tutorialText';
+      p.textContent = TUTORIAL_STEPS[tutorialStep];
+      modalBody.appendChild(p);
+      modalButtons.innerHTML = '';
+      const skipBtn = document.createElement('button');
+      skipBtn.textContent = 'Skip';
+      skipBtn.onclick = closeTutorial;
+      const nextBtn = document.createElement('button');
+      const last = tutorialStep === TUTORIAL_STEPS.length - 1;
+      nextBtn.textContent = last ? 'Got it' : 'Next';
+      nextBtn.onclick = () => {
+        if (last) { closeTutorial(); return; }
+        tutorialStep++;
+        showTutorialStep();
+      };
+      modalButtons.appendChild(skipBtn);
+      modalButtons.appendChild(nextBtn);
+    }
+
+    function openTutorial() {
+      modalKind = 'tutorial';
+      tutorialStep = 0;
+      modalBox.classList.add('modalBox--tutorial');
+      showTutorialStep();
+      modalOverlay.style.display = 'flex';
+    }
+
+    function openHowChecked() {
+      modalKind = 'howChecked';
+      modalBody.innerHTML = '';
+      const p = document.createElement('p');
+      p.textContent = 'The frames are lined up with the sky coordinates. We compared brightest-star '
+        + 'positions across frames (about 0.3 pixels of scatter). Bright stars can leave halos in the '
+        + 'difference view. Difference images are experimental.';
+      modalBody.appendChild(p);
+      modalButtons.innerHTML = '';
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.onclick = closeModal;
+      modalButtons.appendChild(closeBtn);
+      modalOverlay.style.display = 'flex';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || modalOverlay.style.display !== 'flex') return;
+      if (modalKind === 'tutorial') closeTutorial();
+      else closeModal();
+    });
+
+    howItWorksLink.onclick = (e) => { e.preventDefault(); openTutorial(); };
+    howCheckedLink.onclick = (e) => { e.preventDefault(); openHowChecked(); };
 
     // --- band helpers ---
     // a target with t.bands can be viewed band-by-band; older/thin targets only
@@ -433,6 +570,7 @@
       pause();
       currentTarget = t;
       heading.textContent = t.label;
+      renderFieldInfo(t);
 
       const b = bandsOf(t);
       if (b) {
@@ -569,6 +707,7 @@
       if (!done.includes(currentTarget.id)) {
         done.push(currentTarget.id);
         localStorage.setItem('done', JSON.stringify(done));
+        renderProgress();
       }
       const next = pickNext();
       statusP.textContent = next.allDone
@@ -649,6 +788,13 @@
       if (h) openField(h.id, false, h.band, h.mode);
     });
 
+    renderProgress();
+
+    fetch('fields.json')
+      .then(r => r.ok ? r.json() : {})
+      .then(data => { fields = data; if (currentTarget) renderFieldInfo(currentTarget); })
+      .catch(() => { fields = {}; });
+
     fetch('targets.json')
       .then(r => r.json())
       .then(data => {
@@ -657,6 +803,7 @@
         // open the field in the address if it exists, otherwise pick one
         if (!(h && openField(h.id, false, h.band, h.mode))) openField(pickNext().target.id, false);
         renderList();
+        if (!localStorage.getItem('tutorialSeen')) openTutorial();
       })
       .catch(err => {
         console.error(err);
