@@ -15,7 +15,9 @@ import s3fs
 from collections import Counter
 from PIL import Image
 from reproject import reproject_interp
-from scipy.ndimage import binary_dilation
+from scipy.ndimage import binary_dilation, median_filter, gaussian_filter, shift as ndi_shift, label as ndi_label
+from astropy.stats import sigma_clip
+from skimage.registration import phase_cross_correlation
 
 S3_FS = s3fs.S3FileSystem(anon=True)  # reused across frames, no per-frame login cost
 
@@ -23,12 +25,39 @@ S3_FS = s3fs.S3FileSystem(anon=True)  # reused across frames, no per-frame login
 # of just the region we need (block_size=200KB keeps it ~a few MB, not the full
 # ~65MB exposure). If this budget is exhausted, remaining frames are skipped
 # instead of silently downloading full files.
-MAX_S3_FALLBACKS_PER_TARGET = 15
+MAX_S3_FALLBACKS_PER_TARGET = 20
 
 # pixels this bright in the static-sky median are masked to mid-grey in the diff
 # images (a bright star's own PSF/alignment residual isn't a moving/changing source)
 BRIGHT_MASK_PERCENTILE = 99.9
-BRIGHT_MASK_DILATION_ITERATIONS = 1  # grows the mask by ~1 pixel ring around each bright spot
+BRIGHT_MASK_DILATION_ITERATIONS = 6  # grows the mask enough to cover a bright star's halo, not just its core
+
+# how each frame's smooth background is estimated before building the median/diff:
+# "poly2" fits a degree-2 2D polynomial with sigma-clipping (stars excluded as outliers);
+# "median_filter" instead runs a large median filter over the frame.
+BACKGROUND_METHOD = "poly2"
+MEDIAN_FILTER_SIZE = 31  # pixels, only used when BACKGROUND_METHOD == "median_filter"
+POLY_SIGMA_CLIP = 3      # only used when BACKGROUND_METHOD == "poly2"
+
+# sub-pixel alignment of each frame against the median, before differencing
+ALIGN_UPSAMPLE_FACTOR = 20
+ALIGN_CLIP_PERCENTILE = 99.9  # clip the brightest 0.1% before cross-correlating, so a
+                               # saturated core doesn't dominate the shift estimate
+
+# Gaussian-smooths each frame before differencing, to soften the +/- dipoles that
+# sub-pixel alignment residuals leave at point sources. 0 disables it.
+GAUSSIAN_SIGMA_DIFF = 0.7
+
+# registration guard: a frame's estimated shift is only trusted (and applied) if
+# it's small and phase_cross_correlation itself is confident about it. error is
+# skimage's normalized RMS registration error: 0 = perfect match, ~1 = no
+# correlation at all, so 0.5 is a middling-permissive cutoff that still rejects
+# clearly bad matches. Anything that fails either check gets shift=(0,0) instead.
+REGISTRATION_MAX_SHIFT_PX = 2.0
+REGISTRATION_MAX_ERROR = 0.5
+REGISTRATION_MIN_SOURCES = 3     # below this many point sources in the median, skip alignment for the whole band
+REGISTRATION_MIN_PASS_FRAC = 0.7  # below this fraction of confident frames, don't write diff images for the band
+REGISTRATION_SOURCE_SIGMA = 5     # how many sigma above background counts as a "point source" for the count above
 
 OUT_SHAPE = (128, 128)  # shared pixel grid every frame of a target gets reprojected onto
 
@@ -77,6 +106,14 @@ def s3_lazy_cutout(raw_uri, coord, request_size):
             wcs = WCS(hdu.header)
             cut = Cutout2D(hdu.section, coord, request_size * u.deg, wcs=wcs)
             return cut.data.astype(float), cut.wcs
+
+
+def save_cutout_fits(data, wcs, out_path):
+    """Writes an S3 lazy cutout to disk as a normal FITS the rest of the code can
+    read (same IMAGE extension/header shape as a full IRSA download), so later
+    runs and --diff-only find it in the cache instead of re-fetching from S3."""
+    hdu = fits.ImageHDU(data=data.astype(np.float32), header=wcs.to_header(), name="IMAGE")
+    fits.HDUList([fits.PrimaryHDU(), hdu]).writeto(out_path, overwrite=True)
 
 
 def build_target_wcs(ra, dec, size, npix=128):
@@ -133,6 +170,7 @@ def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, 
         s3_fallbacks_used[0] += 1
         try:
             img, wcs = s3_lazy_cutout(raw_uri, coord, request_size)
+            save_cutout_fits(img, wcs, fits_path)  # cache it so future runs reuse this, not re-fetch
         except Exception as e:
             print(f"S3 lazy read failed ({e}), skipping frame (not downloading full file)")
             return None
@@ -147,6 +185,43 @@ def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, 
         print(f"frame hits detector edge (nan_frac={nan_frac:.1%}), skipping")
         return None
     return img
+
+
+def fit_poly2_background(img):
+    """Degree-2 2D polynomial fit, excluding stars via sigma-clipping."""
+    ny, nx = img.shape
+    yy, xx = np.mgrid[0:ny, 0:nx].astype(float)
+    valid = np.isfinite(img)
+    data, xs, ys = img[valid], xx[valid], yy[valid]
+    keep = ~sigma_clip(data, sigma=POLY_SIGMA_CLIP, maxiters=5).mask
+    xs, ys, data = xs[keep], ys[keep], data[keep]
+    A = np.column_stack([np.ones_like(xs), xs, ys, xs**2, xs * ys, ys**2])
+    coeffs, *_ = np.linalg.lstsq(A, data, rcond=None)
+    return coeffs[0] + coeffs[1] * xx + coeffs[2] * yy + coeffs[3] * xx**2 + coeffs[4] * xx * yy + coeffs[5] * yy**2
+
+
+def estimate_background(img):
+    if BACKGROUND_METHOD == "median_filter":
+        return median_filter(np.nan_to_num(img, nan=np.nanmedian(img)), size=MEDIAN_FILTER_SIZE)
+    return fit_poly2_background(img)
+
+
+def clip_bright(img, pct):
+    img = np.nan_to_num(img, nan=0.0)
+    return np.clip(img, None, np.nanpercentile(img, pct))
+
+
+def count_point_sources(median_img, sigma_thresh=REGISTRATION_SOURCE_SIGMA):
+    """Rough point-source count: connected components this many sigma above the
+    median image's own background, used to decide whether there's enough to
+    register against at all."""
+    img = np.nan_to_num(median_img, nan=np.nanmedian(median_img))
+    bg = np.nanmedian(img)
+    sigma = 1.4826 * np.nanmedian(np.abs(img - bg))
+    if not np.isfinite(sigma) or sigma <= 0:
+        return 0
+    _, n = ndi_label(img > bg + sigma_thresh * sigma)
+    return n
 
 
 def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames, offline=False):
@@ -186,21 +261,104 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
     if not collected:
         return []
 
-    bg_subbed = [img - np.nanmedian(img) for _, _, _, img in collected]
+    # subtract a smooth per-frame background (poly2 fit or large median filter)
+    # instead of a single median value, so real structure -- not a sky gradient -- is
+    # what's left to difference
+    bg_subbed = [img - estimate_background(img) for _, _, _, img in collected]
     stack = np.array(bg_subbed)
     lo, hi = np.nanpercentile(stack, [1, 99.5])
     if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
         print(f"{target_id}/{band_code}: degenerate stack stats, skipping band")
         return []
 
-    # static sky = per-pixel median over time; diff = each frame minus that
-    median_img = np.nanmedian(stack, axis=0)
-    diff_stack = stack - median_img
+    # first-pass median (pre-alignment), used as the registration reference AND
+    # as the fixed reference sigma for the before/after fairness report below
+    median_img0 = np.nanmedian(stack, axis=0)
+    diff_before = stack - median_img0
+    mad_before = np.nanmedian(np.abs(diff_before - np.nanmedian(diff_before)))
+    sigma_ref = 1.4826 * mad_before
 
-    global_median = np.nanmedian(diff_stack)
-    mad = np.nanmedian(np.abs(diff_stack - global_median))
-    sigma = 1.4826 * mad  # robust stddev estimate from the median absolute deviation
-    make_diffs = np.isfinite(sigma) and sigma > 0
+    # skip alignment entirely for a band with too few point sources to register against
+    n_sources = count_point_sources(median_img0)
+    skip_registration = n_sources < REGISTRATION_MIN_SOURCES
+    if skip_registration:
+        print(f"{target_id}/{band_code}: only {n_sources} point source(s) in the median image "
+              f"(< {REGISTRATION_MIN_SOURCES}), skipping registration for the whole band")
+
+    # sub-pixel align every frame to that reference (brightest 0.1% clipped so a
+    # saturated core doesn't dominate the cross-correlation). A shift is only
+    # trusted if it's small AND phase_cross_correlation is confident about it;
+    # otherwise shift=(0,0) is used for that frame instead.
+    ref_for_align = clip_bright(median_img0, ALIGN_CLIP_PERCENTILE)
+    shifts, confident, aligned, raw_mags, errors = [], [], [], [], []
+    for img in bg_subbed:
+        filled = np.nan_to_num(img, nan=np.nanmedian(img))
+        if skip_registration:
+            shift_yx, ok, raw_mag, error = np.zeros(2), True, 0.0, 0.0
+        else:
+            raw_shift, error, _ = phase_cross_correlation(ref_for_align, clip_bright(filled, ALIGN_CLIP_PERCENTILE),
+                                                            upsample_factor=ALIGN_UPSAMPLE_FACTOR)
+            raw_mag = float(np.hypot(*raw_shift))
+            ok = raw_mag <= REGISTRATION_MAX_SHIFT_PX and error <= REGISTRATION_MAX_ERROR
+            shift_yx = raw_shift if ok else np.zeros(2)
+        shifts.append(shift_yx)
+        confident.append(ok)
+        raw_mags.append(raw_mag)
+        errors.append(error)
+        aligned.append(ndi_shift(filled, shift_yx, order=3))
+    shifts = np.array(shifts)
+    confident = np.array(confident)
+    raw_mags = np.array(raw_mags)
+    errors = np.array(errors)
+    pass_frac = 1.0 if skip_registration else confident.mean()
+    shift_mag = np.hypot(shifts[:, 0], shifts[:, 1])
+    print(f"{target_id}/{band_code}: sub-pixel shift (px) mean={shift_mag.mean():.3f} "
+          f"std={shift_mag.std():.3f} max={shift_mag.max():.3f}, "
+          f"{int((~confident).sum())}/{len(confident)} frames failed the registration guard (shift=0 used)")
+
+    # band-level fallback: if too many frames failed the guard, force shift=0 for
+    # EVERY frame instead of leaving a mix of shifted/unshifted frames in the stack,
+    # and keep the diffs (WCS alignment only) instead of dropping them
+    registration_mode = "skipped" if skip_registration else "aligned"
+    if not skip_registration and pass_frac < REGISTRATION_MIN_PASS_FRAC:
+        failed = ~confident
+        shift_fail = failed & (raw_mags > REGISTRATION_MAX_SHIFT_PX)
+        error_fail = failed & (errors > REGISTRATION_MAX_ERROR)
+        print(f"{target_id}/{band_code}: registration guard failures -- "
+              f"{int(shift_fail.sum())} over {REGISTRATION_MAX_SHIFT_PX}px shift, "
+              f"{int(error_fail.sum())} over {REGISTRATION_MAX_ERROR} error "
+              f"(median shift={np.median(raw_mags):.3f}px, median error={np.median(errors):.3f})")
+        print(f"{target_id}/{band_code}: only {pass_frac:.0%} of frames passed "
+              f"(< {REGISTRATION_MIN_PASS_FRAC:.0%}) -- falling back to WCS-only alignment "
+              f"(shift=0) for the whole band")
+        shifts = np.zeros_like(shifts)
+        aligned = [np.nan_to_num(img, nan=np.nanmedian(img)) for img in bg_subbed]
+        registration_mode = "wcs_only"
+    aligned_stack = np.array(aligned)
+
+    # soften the +/- dipoles sub-pixel alignment residuals leave at point sources
+    if GAUSSIAN_SIGMA_DIFF > 0:
+        aligned_stack = np.array([gaussian_filter(f, GAUSSIAN_SIGMA_DIFF) for f in aligned_stack])
+
+    # static sky = per-pixel median over time (post-alignment); diff = each frame minus that
+    median_img = np.nanmedian(aligned_stack, axis=0)
+    diff_stack = aligned_stack - median_img
+    sigma_display = 1.4826 * np.nanmedian(np.abs(diff_stack - np.nanmedian(diff_stack)))  # for PNG scaling only
+
+    # fairness: both counts use the SAME (pre-alignment) sigma_ref, not each version's own
+    exceed_before = int((np.abs(diff_before) > 5 * sigma_ref).sum()) if sigma_ref > 0 else None
+    exceed_after = int((np.abs(diff_stack) > 5 * sigma_ref).sum()) if sigma_ref > 0 else None
+    print(f"{target_id}/{band_code}: pixels exceeding +/-5*sigma_ref ({sigma_ref:.4f}) out of "
+          f"{diff_stack.size}: before={exceed_before} after={exceed_after}")
+
+    # background-only std: excludes pixels within ~3px of the brightest 1% of the median,
+    # so a bright star's own residual doesn't dominate the number
+    bg_exclude = binary_dilation(median_img0 >= np.nanpercentile(median_img0, 99), iterations=3)
+    bg_only = ~bg_exclude
+    print(f"{target_id}/{band_code}: background-only std: "
+          f"before={np.nanstd(diff_before[:, bg_only]):.4f} after={np.nanstd(diff_stack[:, bg_only]):.4f}")
+
+    make_diffs = np.isfinite(sigma_display) and sigma_display > 0
     bright_mask = None
     masked_count = 0
     if make_diffs:
@@ -211,8 +369,8 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
         bright_mask = median_img >= bright_thresh
         bright_mask = binary_dilation(bright_mask, iterations=BRIGHT_MASK_DILATION_ITERATIONS)
         masked_count = int(bright_mask.sum())
-        print(f"{target_id}/{band_code}: masking {masked_count}/{bright_mask.size} pixels "
-              f"(>= {BRIGHT_MASK_PERCENTILE}th pct of the static sky)")
+        print(f"{target_id}/{band_code}: masking {masked_count}/{bright_mask.size} pixels per frame "
+              f"({masked_count / bright_mask.size:.1%}, >= {BRIGHT_MASK_PERCENTILE}th pct of the static sky)")
     else:
         print(f"{target_id}/{band_code}: diff sigma is zero/non-finite, skipping diff images")
 
@@ -224,11 +382,11 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
         scaled = np.flipud(scaled)                          # FITS has y flipped
         Image.fromarray((scaled * 255).astype(np.uint8)).save(png_path)
 
-        entry = {"url": png_path, "time": time_iso, "band": band_full}
+        entry = {"url": png_path, "time": time_iso, "band": band_full, "registration": registration_mode}
         if make_diffs:
             diff_path = f"{diff_dir}/{stable_id}.png"
             # -5sigma..+5sigma -> 0..255, zero diff at mid-grey, one scale for the whole stack
-            diff_norm = np.clip(diff_img / (5 * sigma), -1, 1)
+            diff_norm = np.clip(diff_img / (5 * sigma_display), -1, 1)
             diff_norm = np.nan_to_num(diff_norm, nan=0.0)
             diff_gray = (diff_norm + 1) / 2 * 255
             diff_gray[bright_mask] = 127.5  # mid-grey over bright-star pixels
@@ -274,8 +432,11 @@ def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, max_frame
             print(f"SKIP {target_id} {band_code}: only {len(frames)} frames (< {min_needed})")
             continue
 
+        # offline (--diff-only) rebuilds use every frame already cached for this band,
+        # instead of resampling to the cap -- otherwise a rebuild can lose frames whose
+        # cached file doesn't match this run's sampled subset
         band_max = max_frames if band_code == "D2" else max_frames_other
-        if len(frames) > band_max:
+        if not offline and len(frames) > band_max:
             # frames is already time-sorted; spread picks across the full span
             # instead of clustering near the start, so the blink viewer still
             # covers the whole observing window

@@ -164,6 +164,7 @@
     #fieldList li.active { background: var(--box); color: var(--accent); }
     #fieldList li .done { color: var(--muted); font-size: 13px; }
     #noMatch { color: var(--muted); font-size: 14px; margin: 8px 0 0; display: none; }
+    #noMatch a { color: var(--accent); cursor: pointer; }
 
     .row { display: flex; gap: 8px; margin-top: 8px; }
 
@@ -202,6 +203,8 @@
       <!-- band picker: filled in by JS from t.bands, hidden if a target has none -->
       <div id="bandRow" class="pillRow" style="display:none"></div>
       <p id="bandNote" class="hint" style="display:none">Different bands are photographed on different dates.</p>
+      <p id="bandDesc" class="hint" style="display:none"></p>
+      <p id="bandIceHint" class="hint" style="display:none">Ice and dust features are found by comparing bands. A single photo may not show them clearly.</p>
 
       <!-- normal / difference toggle, only shown when the current band has diff images -->
       <div id="modeRow" class="pillRow" style="display:none">
@@ -245,11 +248,12 @@
 
       <div class="section">
         <h2>Browse fields</h2>
-        <input id="search" type="search" placeholder="Search fields..." autocomplete="off">
+        <input id="search" type="search" placeholder="Search fields, or RA Dec e.g. 210.8 54.3" autocomplete="off">
         <ul id="fieldList"></ul>
-        <p id="noMatch">No fields match.</p>
+        <p id="noMatch"></p>
         <div class="row">
           <button id="randomBtn">Random field</button>
+          <button id="surpriseBtn">Surprise me</button>
           <button id="copyBtn">Copy link</button>
         </div>
       </div>
@@ -297,6 +301,8 @@
     const smoothToggle = document.getElementById('smoothToggle');
     const bandRow = document.getElementById('bandRow');
     const bandNote = document.getElementById('bandNote');
+    const bandDesc = document.getElementById('bandDesc');
+    const bandIceHint = document.getElementById('bandIceHint');
     const modeRow = document.getElementById('modeRow');
     const modeNormalBtn = document.getElementById('modeNormalBtn');
     const modeDiffBtn = document.getElementById('modeDiffBtn');
@@ -352,12 +358,31 @@
       if (push && location.hash !== '#' + tag) history.pushState(null, '', '#' + tag);
     }
 
+    // exact wording as given -- what each band is useful for seeing
+    const BAND_DESCRIPTIONS = {
+      D1: 'D1 (0.75-1.09 um): Mostly starlight and distant galaxies. Asteroids show up by reflected sunlight.',
+      D2: 'D2 (1.10-1.62 um): Mostly starlight and galaxies. Sees through some dust better than visible light.',
+      D3: 'D3 (1.63-2.41 um): Starlight, plus cooler stars and warm dust start to show.',
+      D4: 'D4 (2.42-3.82 um): Includes the 3.0 um water-ice feature and the 3.28 um PAH (organic dust) feature.',
+      D5: 'D5 (3.83-4.41 um): Includes the 4.27 um carbon-dioxide ice feature.',
+      D6: 'D6 (4.42-5.00 um): Includes the 4.67 um carbon-monoxide ice feature. Warm objects glow here.',
+    };
+
     function renderBandRow(t) {
       const b = bandsOf(t);
       bandRow.innerHTML = '';
-      if (!b) { bandRow.style.display = 'none'; bandNote.style.display = 'none'; return; }
+      if (!b) {
+        bandRow.style.display = 'none';
+        bandNote.style.display = 'none';
+        bandDesc.style.display = 'none';
+        bandIceHint.style.display = 'none';
+        return;
+      }
       bandRow.style.display = 'flex';
       bandNote.style.display = 'block';
+      bandDesc.textContent = BAND_DESCRIPTIONS[bandCode(currentBand)] || '';
+      bandDesc.style.display = 'block';
+      bandIceHint.style.display = 'block';
       Object.keys(b).sort().forEach(key => {
         const btn = document.createElement('button');
         btn.className = 'pillBtn' + (key === currentBand ? ' active' : '');
@@ -448,10 +473,39 @@
       return { target: pool[Math.floor(Math.random() * pool.length)], allDone };
     }
 
+    // "210.8 54.3" or "210.8, 54.3" -> {ra, dec}, or null if it's not a coordinate pair
+    function parseCoords(q) {
+      const parts = q.trim().split(/[\s,]+/).filter(Boolean);
+      if (parts.length !== 2) return null;
+      const ra = parseFloat(parts[0]), dec = parseFloat(parts[1]);
+      if (!isFinite(ra) || !isFinite(dec)) return null;
+      if (ra < 0 || ra >= 360 || dec < -90 || dec > 90) return null;
+      return { ra, dec };
+    }
+
+    // great-circle separation in degrees between two ra/dec points
+    function angularDistanceDeg(ra1, dec1, ra2, dec2) {
+      const d = Math.PI / 180;
+      const cosC = Math.sin(dec1 * d) * Math.sin(dec2 * d)
+        + Math.cos(dec1 * d) * Math.cos(dec2 * d) * Math.cos((ra1 - ra2) * d);
+      return Math.acos(Math.min(1, Math.max(-1, cosC))) * 180 / Math.PI;
+    }
+
+    function nearestTarget(ra, dec) {
+      let best = null, bestDist = Infinity;
+      targets.forEach(t => {
+        const dist = angularDistanceDeg(ra, dec, t.ra, t.dec);
+        if (dist < bestDist) { bestDist = dist; best = t; }
+      });
+      return best ? { target: best, dist: bestDist } : null;
+    }
+
+    function formatDist(deg) { return deg < 1 ? `${(deg * 60).toFixed(1)}′` : `${deg.toFixed(1)}°`; }
+
     // ----- browse list -----
     function renderList() {
-      const q = searchBox.value.trim().toLowerCase();
-      const shown = targets.filter(t => (t.label + ' ' + t.id).toLowerCase().includes(q));
+      const q = searchBox.value.trim();
+      const shown = q ? targets.filter(t => (t.label + ' ' + t.id).toLowerCase().includes(q.toLowerCase())) : targets;
       fieldList.innerHTML = '';
       shown.forEach(t => {
         const li = document.createElement('li');
@@ -468,7 +522,27 @@
         li.onclick = () => { statusP.textContent = ''; openField(t.id, true); };
         fieldList.appendChild(li);
       });
-      noMatch.style.display = shown.length ? 'none' : 'block';
+
+      if (shown.length) {
+        noMatch.style.display = 'none';
+        return;
+      }
+
+      noMatch.innerHTML = '';
+      const coords = q ? parseCoords(q) : null;
+      if (coords) {
+        const near = nearestTarget(coords.ra, coords.dec);
+        noMatch.append('No field called that. Nearest: ');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.textContent = near.target.label;
+        link.onclick = (e) => { e.preventDefault(); statusP.textContent = ''; openField(near.target.id, true); };
+        noMatch.appendChild(link);
+        noMatch.append(` — ${formatDist(near.dist)} away`);
+      } else {
+        noMatch.textContent = 'No match';
+      }
+      noMatch.style.display = 'block';
     }
 
     comment.oninput = () => { commentCount.textContent = `${comment.value.length}/500`; };
@@ -547,6 +621,12 @@
     document.getElementById('randomBtn').onclick = () => {
       statusP.textContent = '';
       openField(pickNext().target.id, true);
+    };
+    document.getElementById('surpriseBtn').onclick = () => {
+      statusP.textContent = '';
+      const undone = targets.filter(t => !done.includes(t.id));
+      if (!undone.length) { statusP.textContent = 'You have done every field!'; return; }
+      openField(undone[Math.floor(Math.random() * undone.length)].id, true);
     };
     document.getElementById('copyBtn').onclick = () => {
       const btn = document.getElementById('copyBtn');
