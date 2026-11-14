@@ -1,0 +1,947 @@
+[
+  {
+    "id": "test",
+    "label": "Test field",
+    "ra": 210.80227,
+    "dec": 54.34895,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/test/0p2/level2_2025W19_2B_0346_1D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-10T17:04:37.747",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W19_2B_0346_3D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-10T17:08:55.565",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W20_1C_0373_2D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-14T09:09:33.610",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W20_2D_0065_1D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-15T20:59:51.792",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W20_2D_0065_3D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-15T21:04:09.610",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W20_2D_0176_2D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-16T13:19:45.696",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W20_2D_0176_4D2_spx_l2b-v27-2026-198.png",
+        "time": "2025-05-16T13:24:03.600",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W21_2C_0401_2D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-24T21:54:41.990",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W21_2C_0401_4D2_spx_l2b_retry-v27-2026-199.png",
+        "time": "2025-05-24T21:58:59.894",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W22_1B_0129_2D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-26T17:57:26.813",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0426_1D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-06T12:32:03.437",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0426_3D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-06T12:36:21.341",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0650_1D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-07T11:21:33.811",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0650_3D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-07T11:25:51.715",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0707_1D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-07T17:49:36.624",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W49_2A_0756_4D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-07T22:49:46.963",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_1A_0005_2D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-08T00:24:19.901",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_1A_0005_4D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-08T00:28:37.805",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_1A_0506_1D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-10T06:10:03.504",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_2A_0072_1D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-11T17:55:08.659",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_2A_0072_3D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-11T17:59:26.563",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2025W50_2A_0129_1D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-11T22:49:53.702",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W21_2A_0081_2D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T00:07:25.910",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W21_2A_0213_1D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T19:38:10.147",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W21_2A_0213_3D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T19:42:28.051",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W22_2A_0510_1D2_spx_l2b-v27-2026-270.png",
+        "time": "2026-05-31T08:55:24.730",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W22_2A_0510_3D2_spx_l2b-v27-2026-270.png",
+        "time": "2026-05-31T08:59:44.102",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W23_2A_0336_1D2_spx_l2b-v27-2026-270.png",
+        "time": "2026-06-06T08:19:42.182",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W23_2A_0336_3D2_spx_l2b_retry-v27-2026-271.png",
+        "time": "2026-06-06T08:24:00.086",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W25_2A_0170_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-19T07:38:39.610",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/test/0p2/level2_2026W25_2A_0279_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-19T19:01:07.421",
+        "band": "SPHEREx-D2"
+      }
+    ]
+  },
+  {
+    "id": "pleiades",
+    "label": "Pleiades",
+    "ra": 56.75,
+    "dec": 24.12,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:29:17.030",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:31:26.026",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:35:43.843",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T03:51:22.666",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T03:53:31.661",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T07:04:09.638",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:37:58.454",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:40:07.363",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:44:26.736",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:42:19.757",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:46:37.574",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:48:46.483",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-25T19:48:46.051",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png",
+        "time": "2026-02-08T00:35:49.632",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png",
+        "time": "2026-02-08T00:37:58.541",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:25:31.094",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:27:41.558",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:29:50.467",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:01:06.499",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:05:24.403",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:07:33.312",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-13T23:56:30.653",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-14T00:00:48.470",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-14T00:02:57.379",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png",
+        "time": "2026-02-16T10:37:37.574",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:25:36.048",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:27:44.957",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:32:02.861",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:21:54.662",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:26:12.566",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:28:21.475",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:15:26.006",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:17:35.002",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:19:43.910",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:45:58.061",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:48:06.970",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:52:24.787",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/pleiades/0p2/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T05:39:15.581",
+        "band": "SPHEREx-D2"
+      }
+    ]
+  },
+  {
+    "id": "beehive",
+    "label": "Beehive Cluster (M44)",
+    "ra": 130.1,
+    "dec": 19.67,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/beehive/0p2/level2_2025W43_2A_0697_1D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-26T15:12:43.690",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W43_2A_0697_2D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-26T15:14:52.598",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W43_2A_0697_3D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-26T15:17:01.507",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W43_2A_0697_4D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-26T15:19:10.502",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0070_1D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-27T07:31:02.467",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0070_2D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-27T07:33:11.462",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0070_3D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-27T07:35:20.371",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0247_4D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T03:09:36.461",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0366_1D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T16:00:47.290",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0366_2D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T16:02:56.198",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0402_1D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T19:15:15.523",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0402_2D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T19:17:24.432",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0402_3D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T19:19:33.427",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0402_4D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-28T19:21:42.336",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0465_1D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-29T01:46:27.034",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0465_2D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-29T01:48:36.029",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2025W44_1A_0465_3D2_spx_l2b-v27-2026-245.png",
+        "time": "2025-10-29T01:50:44.938",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_1A_0305_1D2_spx_l2b-v27-2026-241.png",
+        "time": "2026-04-14T12:56:16.944",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_1A_0305_2D2_spx_l2b-v27-2026-241.png",
+        "time": "2026-04-14T12:58:25.939",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_1A_0305_3D2_spx_l2b-v27-2026-241.png",
+        "time": "2026-04-14T13:00:34.848",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_1A_0305_4D2_spx_l2b-v27-2026-241.png",
+        "time": "2026-04-14T13:02:43.757",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0057_3D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T18:45:12.355",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0057_4D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T18:47:21.264",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0070_1D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T20:20:06.806",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0070_2D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T20:22:15.715",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0070_3D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T20:24:24.624",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0070_4D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-16T20:26:33.619",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0196_1D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-17T12:37:04.282",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0196_2D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-17T12:39:13.190",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0344_1D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-18T08:08:31.459",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0344_2D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-18T08:10:40.454",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0344_3D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-18T08:12:49.363",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0344_4D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-18T08:14:58.272",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/beehive/0p2/level2_2026W16_2A_0606_1D2_spx_l2b-v27-2026-242.png",
+        "time": "2026-04-19T18:22:23.261",
+        "band": "SPHEREx-D2"
+      }
+    ]
+  },
+  {
+    "id": "ecliptic0",
+    "label": "Ecliptic point RA 0",
+    "ra": 0.0,
+    "dec": 0.0,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W26_1A_0071_1D2_spx_l2b-v27-2026-213.png",
+        "time": "2025-06-23T05:45:44.726",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W26_1A_0514_1D2_spx_l2b-v27-2026-213.png",
+        "time": "2025-06-25T14:49:22.022",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W26_1A_0514_3D2_spx_l2b-v27-2026-213.png",
+        "time": "2025-06-25T14:53:39.926",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W26_1A_0514_4D2_spx_l2b-v27-2026-213.png",
+        "time": "2025-06-25T14:55:48.835",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_1A_0436_2D2_spx_l2b-v27-2026-214.png",
+        "time": "2025-07-02T06:37:14.045",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_1A_0436_3D2_spx_l2b-v27-2026-214.png",
+        "time": "2025-07-02T06:39:22.954",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0152_1D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T04:12:59.789",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0152_2D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T04:15:08.784",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0152_3D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T04:17:17.693",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0219_1D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T10:46:24.874",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0219_2D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T10:48:33.782",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0283_1D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T17:16:21.216",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W27_2A_0283_2D2_spx_l2b-v27-2026-215.png",
+        "time": "2025-07-04T17:18:30.125",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_1A_0758_1D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-11T07:03:18.144",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_1A_0758_2D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-11T07:05:27.053",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_1A_0758_4D2_spx_l2b-v27-2026-209.png",
+        "time": "2025-12-11T07:09:44.957",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_2A_0577_1D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-13T16:06:03.427",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_2A_0577_2D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-13T16:08:12.422",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W50_2A_0577_4D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-13T16:12:30.240",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0065_1D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-15T07:12:37.411",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0065_3D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-15T07:16:55.315",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0065_4D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-15T07:19:04.224",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0485_2D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-17T06:31:02.784",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0485_3D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-17T06:33:11.693",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_1A_0485_4D2_spx_l2b-v27-2026-210.png",
+        "time": "2025-12-17T06:35:20.602",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2025W51_2A_0317_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-20T01:19:12.432",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0507_2D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-17T12:36:12.355",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0507_3D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-17T12:38:21.264",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0580_1D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-17T20:50:28.032",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0636_1D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-18T03:12:25.459",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0636_3D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-18T03:16:43.277",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W25_1A_0636_4D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-18T03:18:52.272",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W26_1A_0018_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-22T01:47:13.344",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W26_1A_0018_3D2_spx_l2b_retry-v27-2026-274.png",
+        "time": "2026-06-22T01:51:31.248",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W26_1A_0018_4D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-22T01:53:40.157",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W26_1A_0143_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-22T16:26:27.542",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W26_1A_0143_2D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-22T16:28:36.451",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic0/0p2/level2_2026W28_1A_0771_1D2_spx_l2b-v27-2026-275.png",
+        "time": "2026-07-09T01:09:40.118",
+        "band": "SPHEREx-D2"
+      }
+    ]
+  },
+  {
+    "id": "ecliptic180",
+    "label": "Ecliptic point RA 180",
+    "ra": 180.0,
+    "dec": 0.0,
+    "band": "SPHEREx-D2",
+    "frames": [
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0032_1D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-19T03:33:04.349",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0032_2D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-19T03:35:13.258",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0032_4D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-19T03:39:31.162",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0345_1D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-20T18:39:38.246",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0345_3D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-20T18:43:56.064",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0345_4D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-20T18:46:04.973",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0570_2D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T00:03:54.922",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0570_3D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T00:06:03.830",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0606_1D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T04:54:20.506",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0606_2D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T04:56:29.414",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_1B_0606_4D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T05:00:47.318",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W21_2C_0020_1D2_spx_l2b-v27-2026-199.png",
+        "time": "2025-05-22T14:41:04.704",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W51_2A_0679_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-21T17:19:52.723",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W51_2A_0679_2D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-21T17:22:01.718",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W51_2A_0679_3D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-21T17:24:10.627",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W51_2A_0727_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-21T22:14:08.563",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0081_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-22T09:38:26.880",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0081_3D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-22T09:42:44.784",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0081_4D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-22T09:44:53.693",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0355_2D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-23T18:15:33.725",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0355_3D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-23T18:17:42.634",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0576_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-24T20:17:28.003",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0576_2D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-24T20:19:36.912",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0576_4D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-24T20:23:54.816",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2025W52_1A_0617_1D2_spx_l2b-v27-2026-211.png",
+        "time": "2025-12-25T01:05:10.896",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W21_2A_0060_1D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-21T21:04:59.030",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W21_2A_0060_2D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-21T21:07:07.939",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W21_2A_0183_1D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T15:01:21.130",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W21_2A_0183_3D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T15:05:38.947",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W21_2A_0183_4D2_spx_l2b-v27-2026-268.png",
+        "time": "2026-05-22T15:07:47.856",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W23_1A_0399_2D2_spx_l2b-v27-2026-270.png",
+        "time": "2026-06-03T05:39:18.346",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W23_1A_0399_4D2_spx_l2b-v27-2026-270.png",
+        "time": "2026-06-03T05:43:36.163",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W24_2B_0184_2D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-12T12:50:29.184",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W24_2B_0184_3D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-12T12:52:38.093",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W25_1A_0551_2D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-17T18:16:57.101",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W25_1A_0551_3D2_spx_l2b-v27-2026-272.png",
+        "time": "2026-06-17T18:19:06.010",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W25_2A_0186_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-19T09:21:14.486",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W26_1A_0654_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-24T19:41:29.040",
+        "band": "SPHEREx-D2"
+      },
+      {
+        "url": "img/ecliptic180/0p2/level2_2026W26_1A_0790_1D2_spx_l2b-v27-2026-273.png",
+        "time": "2026-06-25T10:24:33.494",
+        "band": "SPHEREx-D2"
+      }
+    ]
+  }
+]

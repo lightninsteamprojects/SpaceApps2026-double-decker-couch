@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SPHEREx Sky Blink</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body  { background: #0b1020; color: #e8ecf5; font-family: sans-serif; text-align: center; }
+    #frame { width: 512px; height: 512px; border: 1px solid #3a4668; }
+    button { font-size: 16px; padding: 10px 16px; margin: 4px; }
+  </style>
+</head>
+<body>
+  <h1 id="heading">Loading...</h1>
+  <img id="frame" alt="sky frame">
+  <p id="info"></p>
+  <div>
+    <button id="playBtn">Pause</button>
+    <input id="slider" type="range" min="0" value="0">
+  </div>
+
+  <h3>Did anything move or change?</h3>
+  <div>
+    <button onclick="submitAnswer('moved')">Something moved</button>
+    <button onclick="submitAnswer('brightness')">Something changed brightness</button>
+    <button onclick="submitAnswer('nothing')">Nothing changed</button>
+    <button onclick="submitAnswer('bad_image')">Bad image</button>
+  </div>
+  <p id="status"></p>
+
+  <script>
+    // --- Supabase (note: URL has no /rest/v1/ on the end) ---
+    const sb = supabase.createClient(
+      'https://cgbwhkzsydrowgdcqkxg.supabase.co',
+      'sb_publishable_WpdYXYLrT9JGTq_ZcEZ0kA_ZRCCwIv_'
+    );
+
+    // a random id for this browser, saved so it stays the same
+    const sessionId = localStorage.getItem('sid') || crypto.randomUUID();
+    localStorage.setItem('sid', sessionId);
+
+    // --- page elements ---
+    const frameImg = document.getElementById('frame');
+    const heading  = document.getElementById('heading');
+    const info     = document.getElementById('info');
+    const playBtn  = document.getElementById('playBtn');
+    const slider   = document.getElementById('slider');
+    const statusP  = document.getElementById('status');
+
+    let targets = [];        // all targets from targets.json
+    let currentTarget = null;
+    let frames = [];
+    let i = 0;
+    let timer = null;
+
+    function show(n) {
+      i = n;
+      frameImg.src = frames[i].url;
+      info.textContent = `Frame ${i + 1} of ${frames.length} · ${frames[i].time.slice(0, 10)} · ${frames[i].band}`;
+      slider.value = i;
+    }
+    function play()  { timer = setInterval(() => show((i + 1) % frames.length), 300); playBtn.textContent = 'Pause'; }
+    function pause() { clearInterval(timer); timer = null; playBtn.textContent = 'Play'; }
+
+    function loadTarget(t) {
+      pause();
+      currentTarget = t;
+      heading.textContent = t.label;
+      frames = t.frames;
+      frames.forEach(f => { new Image().src = f.url; });  // preload
+      slider.max = frames.length - 1;
+      show(0);
+      play();
+    }
+
+    function nextTarget() {
+      loadTarget(targets[Math.floor(Math.random() * targets.length)]);
+    }
+
+    async function submitAnswer(answer) {
+      const { error } = await sb.from('classifications').insert({
+        target_id: currentTarget.id,
+        answer: answer,
+        session_id: sessionId
+      });
+      if (error) {
+        console.error(error);
+        statusP.textContent = 'Could not save: ' + error.message;
+        return;
+      }
+      statusP.textContent = 'Saved. Here is another field.';
+      nextTarget();
+    }
+
+    playBtn.onclick = () => (timer ? pause() : play());
+    slider.oninput  = () => { pause(); show(Number(slider.value)); };
+
+    fetch('targets.json')
+      .then(r => r.json())
+      .then(data => { targets = data; nextTarget(); });
+  </script>
+</body>
+</html>
