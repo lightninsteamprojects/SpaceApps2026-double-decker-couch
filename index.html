@@ -68,6 +68,24 @@
     #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 14px; }
     #smoothLabel input { accent-color: var(--accent); }
 
+    /* ----- band + mode pill buttons (share the same look) ----- */
+    .pillRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .pillBtn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .pillBtn .range { font-size: 11px; color: var(--muted); }
+    .pillBtn.active { border-color: var(--accent); color: var(--accent); }
+    .pillBtn.active .range { color: var(--accent); }
+
+    .hint { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+
+    #shareRow { margin-top: 14px; }
+
     button {
       font: inherit;
       color: var(--text);
@@ -180,6 +198,23 @@
         <input type="checkbox" id="smoothToggle">
         Smooth display (doesn't add detail)
       </label>
+
+      <!-- band picker: filled in by JS from t.bands, hidden if a target has none -->
+      <div id="bandRow" class="pillRow" style="display:none"></div>
+      <p id="bandNote" class="hint" style="display:none">Different bands are photographed on different dates.</p>
+
+      <!-- normal / difference toggle, only shown when the current band has diff images -->
+      <div id="modeRow" class="pillRow" style="display:none">
+        <button id="modeNormalBtn" class="pillBtn active">Normal</button>
+        <button id="modeDiffBtn" class="pillBtn">Difference</button>
+      </div>
+
+      <div id="shareRow" class="row">
+        <button id="downloadBtn">Download this photo</button>
+        <button id="copyImgBtn">Copy image</button>
+        <button id="downloadGifBtn" style="display:none">Download GIF</button>
+      </div>
+      <p id="creditLine" class="hint">SPHEREx / NASA/IPAC IRSA</p>
     </section>
 
     <!-- right: instructions, answers, browse -->
@@ -260,6 +295,14 @@
     const comment = document.getElementById('comment');
     const commentCount = document.getElementById('commentCount');
     const smoothToggle = document.getElementById('smoothToggle');
+    const bandRow = document.getElementById('bandRow');
+    const bandNote = document.getElementById('bandNote');
+    const modeRow = document.getElementById('modeRow');
+    const modeNormalBtn = document.getElementById('modeNormalBtn');
+    const modeDiffBtn = document.getElementById('modeDiffBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const copyImgBtn = document.getElementById('copyImgBtn');
+    const downloadGifBtn = document.getElementById('downloadGifBtn');
 
     // image-rendering only changes how the browser displays the pixels; the
     // underlying PNG files are untouched either way
@@ -272,32 +315,123 @@
 
     let targets = [];        // all targets from targets.json
     let currentTarget = null;
+    let currentBand = null;  // full band name, e.g. "SPHEREx-D2" (null if the target has no t.bands)
+    let currentMode = 'normal';  // 'normal' | 'diff'
     let frames = [];
     let i = 0;
     let timer = null;
 
+    // --- band helpers ---
+    // a target with t.bands can be viewed band-by-band; older/thin targets only
+    // have t.frames, so they fall back to a single implicit band (currentBand = null)
+    function bandsOf(t) {
+      return (t.bands && Object.keys(t.bands).length) ? t.bands : null;
+    }
+    function bandCode(full) { return full ? full.replace('SPHEREx-', '') : full; }
+    function fullBand(code) { return 'SPHEREx-' + code; }
+    function defaultBand(t) {
+      const b = bandsOf(t);
+      if (!b) return null;
+      const keys = Object.keys(b).sort();  // "SPHEREx-D1".."D6" sort correctly as strings
+      return keys.includes('SPHEREx-D2') ? 'SPHEREx-D2' : keys[0];
+    }
+
     function show(n) {
       i = n;
-      frameImg.src = frames[i].url;
-      info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${frames[i].time.slice(0, 10)} · band ${frames[i].band}`;
+      const f = frames[i];
+      frameImg.src = (currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url;
+      info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${f.time.slice(0, 10)} · band ${f.band}`;
       slider.value = i;
     }
     function play()  { timer = setInterval(() => show((i + 1) % frames.length), 300); playBtn.textContent = 'Pause'; }
     function pause() { clearInterval(timer); timer = null; playBtn.textContent = 'Play'; }
 
-    // open a field. push = true adds it to the page address (#id)
-    function openField(id, push) {
+    // address bar: #id/band/mode, or just #id for a target with no bands
+    function updateHash(push) {
+      const tag = currentBand ? `${currentTarget.id}/${bandCode(currentBand)}/${currentMode}` : currentTarget.id;
+      if (push && location.hash !== '#' + tag) history.pushState(null, '', '#' + tag);
+    }
+
+    function renderBandRow(t) {
+      const b = bandsOf(t);
+      bandRow.innerHTML = '';
+      if (!b) { bandRow.style.display = 'none'; bandNote.style.display = 'none'; return; }
+      bandRow.style.display = 'flex';
+      bandNote.style.display = 'block';
+      Object.keys(b).sort().forEach(key => {
+        const btn = document.createElement('button');
+        btn.className = 'pillBtn' + (key === currentBand ? ' active' : '');
+        const code = document.createElement('span');
+        code.textContent = bandCode(key);
+        btn.appendChild(code);
+        const range = t.band_ranges && t.band_ranges[key];
+        if (range) {
+          const r = document.createElement('span');
+          r.className = 'range';
+          r.textContent = `${range[0]}–${range[1]} µm`;
+          btn.appendChild(r);
+        }
+        btn.onclick = () => openField(t.id, true, bandCode(key), currentMode);
+        bandRow.appendChild(btn);
+      });
+    }
+
+    function renderModeRow() {
+      const hasDiff = frames.length && frames[0].diff_url;
+      modeRow.style.display = hasDiff ? 'flex' : 'none';
+      modeNormalBtn.classList.toggle('active', currentMode === 'normal');
+      modeDiffBtn.classList.toggle('active', currentMode === 'diff');
+    }
+
+    function updateGifLink() {
+      if (currentTarget && currentTarget.gif_url) {
+        downloadGifBtn.style.display = 'inline-block';
+        downloadGifBtn.onclick = () => downloadUrl(currentTarget.gif_url);
+      } else {
+        downloadGifBtn.style.display = 'none';
+      }
+    }
+
+    function downloadUrl(url) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = url.split('/').pop();
+      a.click();
+    }
+
+    // open a field. push = true adds it to the page address.
+    // band/mode are optional (short band code like "D2", and 'normal'/'diff');
+    // missing or invalid ones fall back to sensible defaults.
+    function openField(id, push, band, mode) {
       const t = targets.find(x => x.id === id);
       if (!t) return false;
       pause();
       currentTarget = t;
       heading.textContent = t.label;
-      frames = t.frames;
-      frames.forEach(f => { new Image().src = f.url; });  // preload
+
+      const b = bandsOf(t);
+      if (b) {
+        const wanted = band ? fullBand(band) : null;
+        currentBand = (wanted && b[wanted]) ? wanted : defaultBand(t);
+        frames = b[currentBand];
+      } else {
+        currentBand = null;
+        frames = t.frames;
+      }
+      currentMode = (mode === 'diff' && frames.length && frames[0].diff_url) ? 'diff' : 'normal';
+
+      frames.forEach(f => {       // preload both views so switching is instant
+        new Image().src = f.url;
+        if (f.diff_url) new Image().src = f.diff_url;
+      });
       slider.max = frames.length - 1;
       show(0);
       play();
-      if (push && location.hash !== '#' + id) history.pushState(null, '', '#' + id);
+
+      renderBandRow(t);
+      renderModeRow();
+      updateGifLink();
+      updateHash(push);
       renderList();
       return true;
     }
@@ -347,7 +481,8 @@
         target_id: currentTarget.id,
         answer: answer,
         session_id: sessionId,
-        comment: commentText
+        comment: commentText,
+        band: currentBand
       });
       answerBtns.forEach(b => b.disabled = false);
       if (error) {
@@ -372,6 +507,43 @@
     slider.oninput  = () => { pause(); show(Number(slider.value)); };
     searchBox.oninput = renderList;
 
+    // mode toggle keeps the same field/band/frame index, just restarts nothing
+    modeNormalBtn.onclick = () => {
+      if (currentMode === 'normal') return;
+      currentMode = 'normal';
+      renderModeRow();
+      show(i);
+      updateHash(true);
+    };
+    modeDiffBtn.onclick = () => {
+      if (currentMode === 'diff' || !frames[i].diff_url) return;
+      currentMode = 'diff';
+      renderModeRow();
+      show(i);
+      updateHash(true);
+    };
+
+    downloadBtn.onclick = () => {
+      const f = frames[i];
+      downloadUrl((currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url);
+    };
+
+    copyImgBtn.onclick = async () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = frameImg.naturalWidth;
+        canvas.height = frameImg.naturalHeight;
+        canvas.getContext('2d').drawImage(frameImg, 0, 0);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        copyImgBtn.textContent = 'Copied';
+      } catch (e) {
+        console.error(e);
+        copyImgBtn.textContent = 'Copy not supported';
+      }
+      setTimeout(() => { copyImgBtn.textContent = 'Copy image'; }, 1500);
+    };
+
     document.getElementById('randomBtn').onclick = () => {
       statusP.textContent = '';
       openField(pickNext().target.id, true);
@@ -383,19 +555,27 @@
         .catch(() => { btn.textContent = 'Copy failed'; setTimeout(() => btn.textContent = 'Copy link', 1500); });
     };
 
+    // #id/band/mode -- band and mode are optional, openField fills in defaults
+    function parseHash() {
+      const raw = decodeURIComponent(location.hash.slice(1));
+      if (!raw) return null;
+      const [id, band, mode] = raw.split('/');
+      return { id, band, mode };
+    }
+
     // back/forward buttons and edited addresses
     window.addEventListener('popstate', () => {
-      const id = decodeURIComponent(location.hash.slice(1));
-      if (id) openField(id, false);
+      const h = parseHash();
+      if (h) openField(h.id, false, h.band, h.mode);
     });
 
     fetch('targets.json')
       .then(r => r.json())
       .then(data => {
         targets = data;
-        const id = decodeURIComponent(location.hash.slice(1));
+        const h = parseHash();
         // open the field in the address if it exists, otherwise pick one
-        if (!(id && openField(id, false))) openField(pickNext().target.id, false);
+        if (!(h && openField(h.id, false, h.band, h.mode))) openField(pickNext().target.id, false);
         renderList();
       })
       .catch(err => {
