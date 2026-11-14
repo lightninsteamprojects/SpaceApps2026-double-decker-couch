@@ -29,8 +29,10 @@ MAX_S3_FALLBACKS_PER_TARGET = 20
 
 # pixels this bright in the static-sky median are masked to mid-grey in the diff
 # images (a bright star's own PSF/alignment residual isn't a moving/changing source)
-BRIGHT_MASK_PERCENTILE = 99.9
-BRIGHT_MASK_DILATION_ITERATIONS = 6  # grows the mask enough to cover a bright star's halo, not just its core
+BRIGHT_MASK_PERCENTILE = 99.5  # dimmer tier: covers an ordinary star's halo
+BRIGHT_MASK_DILATION_ITERATIONS = 6
+BRIGHT_MASK_PERCENTILE_STRONG = 99.9  # brighter tier: wider dilation for a saturating star's larger residual
+BRIGHT_MASK_DILATION_ITERATIONS_STRONG = 12
 
 # how each frame's smooth background is estimated before building the median/diff:
 # "poly2" fits a degree-2 2D polynomial with sigma-clipping (stars excluded as outliers);
@@ -259,7 +261,7 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
     print(f"{target_id}/{band_code}: {len(collected)}/{len(frames)} frames succeeded, "
           f"{edge_drops[0]} dropped for hitting detector edge")
     if not collected:
-        return []
+        return [], 0
 
     # subtract a smooth per-frame background (poly2 fit or large median filter)
     # instead of a single median value, so real structure -- not a sky gradient -- is
@@ -269,7 +271,7 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
     lo, hi = np.nanpercentile(stack, [1, 99.5])
     if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
         print(f"{target_id}/{band_code}: degenerate stack stats, skipping band")
-        return []
+        return [], 0
 
     # first-pass median (pre-alignment), used as the registration reference AND
     # as the fixed reference sigma for the before/after fairness report below
@@ -290,8 +292,9 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
     # trusted if it's small AND phase_cross_correlation is confident about it;
     # otherwise shift=(0,0) is used for that frame instead.
     ref_for_align = clip_bright(median_img0, ALIGN_CLIP_PERCENTILE)
-    shifts, confident, aligned, raw_mags, errors = [], [], [], [], []
+    shifts, confident, aligned, aligned_valid, raw_mags, errors = [], [], [], [], [], []
     for img in bg_subbed:
+        valid = ~np.isnan(img)  # true per-pixel coverage, before NaN gets filled in for alignment
         filled = np.nan_to_num(img, nan=np.nanmedian(img))
         if skip_registration:
             shift_yx, ok, raw_mag, error = np.zeros(2), True, 0.0, 0.0
@@ -306,6 +309,9 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
         raw_mags.append(raw_mag)
         errors.append(error)
         aligned.append(ndi_shift(filled, shift_yx, order=3))
+        # carry validity through the same shift (nearest-neighbor, so it stays a clean
+        # boolean) instead of letting the filled-in value pass as real data downstream
+        aligned_valid.append(ndi_shift(valid.astype(float), shift_yx, order=0) > 0.5)
     shifts = np.array(shifts)
     confident = np.array(confident)
     raw_mags = np.array(raw_mags)
@@ -333,16 +339,21 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
               f"(shift=0) for the whole band")
         shifts = np.zeros_like(shifts)
         aligned = [np.nan_to_num(img, nan=np.nanmedian(img)) for img in bg_subbed]
+        aligned_valid = [~np.isnan(img) for img in bg_subbed]
         registration_mode = "wcs_only"
     aligned_stack = np.array(aligned)
+    valid_stack = np.array(aligned_valid)
 
     # soften the +/- dipoles sub-pixel alignment residuals leave at point sources
     if GAUSSIAN_SIGMA_DIFF > 0:
         aligned_stack = np.array([gaussian_filter(f, GAUSSIAN_SIGMA_DIFF) for f in aligned_stack])
 
-    # static sky = per-pixel median over time (post-alignment); diff = each frame minus that
-    median_img = np.nanmedian(aligned_stack, axis=0)
-    diff_stack = aligned_stack - median_img
+    # static sky = per-pixel median over time (post-alignment); diff = each frame minus that.
+    # re-mask invalid pixels (lost when they were filled in for alignment) so a frame that
+    # doesn't cover a spot never contributes a fake value to the median or the diff
+    valid_aligned_stack = np.where(valid_stack, aligned_stack, np.nan)
+    median_img = np.nanmedian(valid_aligned_stack, axis=0)
+    diff_stack = valid_aligned_stack - median_img
     sigma_display = 1.4826 * np.nanmedian(np.abs(diff_stack - np.nanmedian(diff_stack)))  # for PNG scaling only
 
     # fairness: both counts use the SAME (pre-alignment) sigma_ref, not each version's own
@@ -364,18 +375,24 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
     if make_diffs:
         os.makedirs(diff_dir, exist_ok=True)
         # bright stars leave their own PSF/alignment residual in the diff, not a
-        # moving/changing source -- mask them out to mid-grey instead of hiding that fact
+        # moving/changing source -- mask them out to mid-grey instead of hiding that fact.
+        # two tiers: an ordinary bright star gets a modest dilation, a saturating one
+        # (much larger residual) gets a wider dilation so its halo is fully covered
         bright_thresh = np.nanpercentile(median_img, BRIGHT_MASK_PERCENTILE)
-        bright_mask = median_img >= bright_thresh
-        bright_mask = binary_dilation(bright_mask, iterations=BRIGHT_MASK_DILATION_ITERATIONS)
+        bright_mask = binary_dilation(median_img >= bright_thresh, iterations=BRIGHT_MASK_DILATION_ITERATIONS)
+        strong_thresh = np.nanpercentile(median_img, BRIGHT_MASK_PERCENTILE_STRONG)
+        strong_mask = binary_dilation(median_img >= strong_thresh, iterations=BRIGHT_MASK_DILATION_ITERATIONS_STRONG)
+        bright_mask = bright_mask | strong_mask
         masked_count = int(bright_mask.sum())
         print(f"{target_id}/{band_code}: masking {masked_count}/{bright_mask.size} pixels per frame "
-              f"({masked_count / bright_mask.size:.1%}, >= {BRIGHT_MASK_PERCENTILE}th pct of the static sky)")
+              f"({masked_count / bright_mask.size:.1%}, >= {BRIGHT_MASK_PERCENTILE}th/"
+              f"{BRIGHT_MASK_PERCENTILE_STRONG}th pct of the static sky)")
     else:
         print(f"{target_id}/{band_code}: diff sigma is zero/non-finite, skipping diff images")
 
     out_frames = []
-    for (png_path, stable_id, time_iso, _), img_sub, diff_img in zip(collected, bg_subbed, diff_stack):
+    for (png_path, stable_id, time_iso, _), img_sub, diff_img, valid_i in zip(collected, bg_subbed, diff_stack,
+                                                                                valid_stack):
         scaled = np.clip((img_sub - lo) / (hi - lo), 0, 1)
         scaled = np.arcsinh(10 * scaled) / np.arcsinh(10)   # brings out faint stuff
         scaled = np.nan_to_num(scaled, nan=0.0)
@@ -390,6 +407,8 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
             diff_norm = np.nan_to_num(diff_norm, nan=0.0)
             diff_gray = (diff_norm + 1) / 2 * 255
             diff_gray[bright_mask] = 127.5  # mid-grey over bright-star pixels
+            invalid_mask = binary_dilation(~valid_i, iterations=1)  # +1px so a smoothed edge doesn't leak through
+            diff_gray[invalid_mask] = 127.5
             diff_gray = np.flipud(diff_gray)
             Image.fromarray(diff_gray.astype(np.uint8)).save(diff_path)
             entry["diff_url"] = diff_path
