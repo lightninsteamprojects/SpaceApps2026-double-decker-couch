@@ -15,6 +15,7 @@ import s3fs
 from collections import Counter
 from PIL import Image
 from reproject import reproject_interp
+from scipy.ndimage import binary_dilation
 
 S3_FS = s3fs.S3FileSystem(anon=True)  # reused across frames, no per-frame login cost
 
@@ -23,6 +24,11 @@ S3_FS = s3fs.S3FileSystem(anon=True)  # reused across frames, no per-frame login
 # ~65MB exposure). If this budget is exhausted, remaining frames are skipped
 # instead of silently downloading full files.
 MAX_S3_FALLBACKS_PER_TARGET = 15
+
+# pixels this bright in the static-sky median are masked to mid-grey in the diff
+# images (a bright star's own PSF/alignment residual isn't a moving/changing source)
+BRIGHT_MASK_PERCENTILE = 99.9
+BRIGHT_MASK_DILATION_ITERATIONS = 1  # grows the mask by ~1 pixel ring around each bright spot
 
 OUT_SHAPE = (128, 128)  # shared pixel grid every frame of a target gets reprojected onto
 
@@ -103,13 +109,18 @@ def migrate_flat_cache(target_id, size_tag, band_code="D2"):
         print(f"migrated {len(loose_files)} files: {flat_dir}/*  ->  {band_dir}/")
 
 
-def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, s3_fallbacks_used, edge_drops):
+def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, s3_fallbacks_used, edge_drops,
+                       offline=False):
     """Download (or reuse the cached FITS) and reproject onto the target's shared
-    grid. Returns the reprojected array, or None if the frame should be skipped."""
+    grid. Returns the reprojected array, or None if the frame should be skipped.
+    offline=True never downloads -- only cached FITS files are used (for --diff-only)."""
     if os.path.exists(fits_path):
         with fits.open(fits_path) as hdul:
             img = hdul["IMAGE"].data.astype(float)
             wcs = WCS(hdul["IMAGE"].header)
+    elif offline:
+        print("not cached, skipping (--diff-only)")
+        return None
     elif download(url, fits_path):
         with fits.open(fits_path) as hdul:
             img = hdul["IMAGE"].data.astype(float)
@@ -138,20 +149,23 @@ def fetch_reprojected(url, raw_uri, fits_path, coord, request_size, target_wcs, 
     return img
 
 
-def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames):
+def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames, offline=False):
     """Fetch+reproject every frame of one band, then apply one shared
     background-subtract + percentile stretch across the whole stack, so
     brightness is consistent frame to frame instead of each frame being
-    stretched to its own contrast."""
+    stretched to its own contrast. Also builds a difference image per frame
+    (frame minus the per-pixel time median) to make moving/changing sources
+    pop out against the mostly-static star field."""
     band_full = f"SPHEREx-{band_code}"
     data_dir = f"data/{target_id}/{size_tag}/{band_code}"
     img_dir = f"img/{target_id}/{size_tag}/{band_code}"
+    diff_dir = f"{img_dir}/diff"
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(img_dir, exist_ok=True)
 
     s3_fallbacks_used = [0]  # mutable int, shared across this band's fetch calls
     edge_drops = [0]
-    collected = []  # (png_path, time_iso, img)
+    collected = []  # (png_path, stable_id, time_iso, img)
     for row in frames:
         # stable id from the filename IRSA/S3 already gave this exposure, so a
         # cached file always matches the frame it was downloaded for, even if
@@ -160,36 +174,73 @@ def process_band(target_id, size_tag, band_code, coord, request_size, target_wcs
         fits_path = f"{data_dir}/{stable_id}.fits"
         png_path = f"{img_dir}/{stable_id}.png"
         img = fetch_reprojected(row["uri"], row["raw_uri"], fits_path, coord, request_size, target_wcs,
-                                 s3_fallbacks_used, edge_drops)
+                                 s3_fallbacks_used, edge_drops, offline=offline)
         if img is not None:
             time_iso = Time(row["time_bounds_lower"], format="mjd").isot  # MJD days -> ISO for the frontend
-            collected.append((png_path, time_iso, img))
-        time.sleep(1)  # be polite to IRSA
+            collected.append((png_path, stable_id, time_iso, img))
+        if not offline:
+            time.sleep(1)  # be polite to IRSA
 
     print(f"{target_id}/{band_code}: {len(collected)}/{len(frames)} frames succeeded, "
           f"{edge_drops[0]} dropped for hitting detector edge")
     if not collected:
         return []
 
-    bg_subbed = [img - np.nanmedian(img) for _, _, img in collected]
+    bg_subbed = [img - np.nanmedian(img) for _, _, _, img in collected]
     stack = np.array(bg_subbed)
     lo, hi = np.nanpercentile(stack, [1, 99.5])
     if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
         print(f"{target_id}/{band_code}: degenerate stack stats, skipping band")
         return []
 
+    # static sky = per-pixel median over time; diff = each frame minus that
+    median_img = np.nanmedian(stack, axis=0)
+    diff_stack = stack - median_img
+
+    global_median = np.nanmedian(diff_stack)
+    mad = np.nanmedian(np.abs(diff_stack - global_median))
+    sigma = 1.4826 * mad  # robust stddev estimate from the median absolute deviation
+    make_diffs = np.isfinite(sigma) and sigma > 0
+    bright_mask = None
+    masked_count = 0
+    if make_diffs:
+        os.makedirs(diff_dir, exist_ok=True)
+        # bright stars leave their own PSF/alignment residual in the diff, not a
+        # moving/changing source -- mask them out to mid-grey instead of hiding that fact
+        bright_thresh = np.nanpercentile(median_img, BRIGHT_MASK_PERCENTILE)
+        bright_mask = median_img >= bright_thresh
+        bright_mask = binary_dilation(bright_mask, iterations=BRIGHT_MASK_DILATION_ITERATIONS)
+        masked_count = int(bright_mask.sum())
+        print(f"{target_id}/{band_code}: masking {masked_count}/{bright_mask.size} pixels "
+              f"(>= {BRIGHT_MASK_PERCENTILE}th pct of the static sky)")
+    else:
+        print(f"{target_id}/{band_code}: diff sigma is zero/non-finite, skipping diff images")
+
     out_frames = []
-    for (png_path, time_iso, _), img_sub in zip(collected, bg_subbed):
+    for (png_path, stable_id, time_iso, _), img_sub, diff_img in zip(collected, bg_subbed, diff_stack):
         scaled = np.clip((img_sub - lo) / (hi - lo), 0, 1)
         scaled = np.arcsinh(10 * scaled) / np.arcsinh(10)   # brings out faint stuff
         scaled = np.nan_to_num(scaled, nan=0.0)
         scaled = np.flipud(scaled)                          # FITS has y flipped
         Image.fromarray((scaled * 255).astype(np.uint8)).save(png_path)
-        out_frames.append({"url": png_path, "time": time_iso, "band": band_full})
-    return out_frames
+
+        entry = {"url": png_path, "time": time_iso, "band": band_full}
+        if make_diffs:
+            diff_path = f"{diff_dir}/{stable_id}.png"
+            # -5sigma..+5sigma -> 0..255, zero diff at mid-grey, one scale for the whole stack
+            diff_norm = np.clip(diff_img / (5 * sigma), -1, 1)
+            diff_norm = np.nan_to_num(diff_norm, nan=0.0)
+            diff_gray = (diff_norm + 1) / 2 * 255
+            diff_gray[bright_mask] = 127.5  # mid-grey over bright-star pixels
+            diff_gray = np.flipud(diff_gray)
+            Image.fromarray(diff_gray.astype(np.uint8)).save(diff_path)
+            entry["diff_url"] = diff_path
+        out_frames.append(entry)
+    return out_frames, masked_count
 
 
-def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, bands=None):
+def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, max_frames_other=20, bands=None,
+                    offline=False):
     bands = bands if bands is not None else BANDS
     coord = SkyCoord(ra=ra, dec=dec, unit="deg")
     request_size = size * 1.5  # request more than the display size so reprojection has margin
@@ -214,6 +265,7 @@ def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, bands=Non
     print(f"{target_id}: TAP found {len(results)} frames")
 
     bands_out = {}
+    total_masked = 0
     for band_code in bands:
         band_full = f"SPHEREx-{band_code}"
         frames = results[results["energy_bandpassname"] == band_full]
@@ -222,18 +274,24 @@ def process_target(target_id, ra, dec, label, size=0.2, max_frames=40, bands=Non
             print(f"SKIP {target_id} {band_code}: only {len(frames)} frames (< {min_needed})")
             continue
 
-        if len(frames) > max_frames:
+        band_max = max_frames if band_code == "D2" else max_frames_other
+        if len(frames) > band_max:
             # frames is already time-sorted; spread picks across the full span
             # instead of clustering near the start, so the blink viewer still
             # covers the whole observing window
-            idx = np.unique(np.linspace(0, len(frames) - 1, max_frames).round().astype(int))
+            idx = np.unique(np.linspace(0, len(frames) - 1, band_max).round().astype(int))
             frames = frames[idx]
             print(f"{target_id}/{band_code}: sampled down to {len(frames)} frames across full time range")
 
-        out_frames = process_band(target_id, size_tag, band_code, coord, request_size, target_wcs, frames)
+        t0 = time.time()
+        out_frames, masked_count = process_band(target_id, size_tag, band_code, coord, request_size, target_wcs,
+                                                  frames, offline=offline)
+        print(f"{target_id}/{band_code}: took {time.time() - t0:.1f}s, masked {masked_count} pixels")
+        total_masked += masked_count
         if out_frames:
             bands_out[band_full] = out_frames
 
+    print(f"{target_id}: {total_masked} pixels masked total across {len(bands_out)} bands")
     if not bands_out:
         return None
 
@@ -333,9 +391,11 @@ TEST_MAX_FRAMES = 5
 #   python prep/test_one.py --count                   frames per band + D2 time span, no downloads
 #   python prep/test_one.py --clean                    delete data/, img/, targets.json (asks first)
 #   python prep/test_one.py --only pleiades             run just one target (5 frames/band)
-#   python prep/test_one.py --only pleiades --full       all bands, up to 40 frames/band
+#   python prep/test_one.py --only pleiades --full       D2 up to 40 frames, other bands up to 20
+#   python prep/test_one.py --only pleiades --full --max-frames-other 10   fewer non-D2 frames
 #   python prep/test_one.py --only pleiades --bands D1,D2 --full   only those bands
 #   python prep/test_one.py --full                      all targets, all bands
+#   python prep/test_one.py --only pleiades --bands D2 --full --diff-only   diffs from cache, no downloads
 if __name__ == "__main__":
     import sys
 
@@ -355,9 +415,18 @@ if __name__ == "__main__":
     if "--bands" in sys.argv:
         bands = sys.argv[sys.argv.index("--bands") + 1].split(",")
 
-    kwargs = {"bands": bands}
-    if "--full" not in sys.argv:
+    max_frames_other = 20
+    explicit_mfo = "--max-frames-other" in sys.argv
+    if explicit_mfo:
+        max_frames_other = int(sys.argv[sys.argv.index("--max-frames-other") + 1])
+
+    kwargs = {"bands": bands, "offline": "--diff-only" in sys.argv}
+    if "--full" in sys.argv:
+        kwargs["max_frames_other"] = max_frames_other
+    else:
+        # quick test runs stay uniform across bands unless the user overrides it
         kwargs["max_frames"] = TEST_MAX_FRAMES
+        kwargs["max_frames_other"] = max_frames_other if explicit_mfo else TEST_MAX_FRAMES
 
     for target_id, ra, dec, label in TARGETS:
         if only and target_id != only:

@@ -164,205 +164,6 @@
     ]
   },
   {
-    "id": "pleiades",
-    "label": "Pleiades",
-    "ra": 56.75,
-    "dec": 24.12,
-    "band": "SPHEREx-D2",
-    "frames": [
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T00:29:17.030",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T00:31:26.026",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T00:35:43.843",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T03:51:22.666",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T03:53:31.661",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-22T07:04:09.638",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-23T15:37:58.454",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-23T15:40:07.363",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-23T15:44:26.736",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-24T04:42:19.757",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-24T04:46:37.574",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png",
-        "time": "2025-08-24T04:48:46.483",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png",
-        "time": "2025-08-25T19:48:46.051",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png",
-        "time": "2026-02-08T00:35:49.632",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png",
-        "time": "2026-02-08T00:37:58.541",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png",
-        "time": "2026-02-09T12:25:31.094",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png",
-        "time": "2026-02-09T12:27:41.558",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png",
-        "time": "2026-02-09T12:29:50.467",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-12T17:01:06.499",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-12T17:05:24.403",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-12T17:07:33.312",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-13T23:56:30.653",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-14T00:00:48.470",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png",
-        "time": "2026-02-14T00:02:57.379",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png",
-        "time": "2026-02-16T10:37:37.574",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-20T19:25:36.048",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-20T19:27:44.957",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-20T19:32:02.861",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T00:21:54.662",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T00:26:12.566",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T00:28:21.475",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T05:15:26.006",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T05:17:35.002",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-21T05:19:43.910",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-22T00:45:58.061",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-22T00:48:06.970",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-22T00:52:24.787",
-        "band": "SPHEREx-D2"
-      },
-      {
-        "url": "img/pleiades/0p2/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png",
-        "time": "2026-08-22T05:39:15.581",
-        "band": "SPHEREx-D2"
-      }
-    ]
-  },
-  {
     "id": "beehive",
     "label": "Beehive Cluster (M44)",
     "ra": 130.1,
@@ -1535,5 +1336,499 @@
         "band": "SPHEREx-D2"
       }
     ]
+  },
+  {
+    "id": "pleiades",
+    "label": "Pleiades",
+    "ra": 56.75,
+    "dec": 24.12,
+    "frames": [
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:29:17.030",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:31:26.026",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T00:35:43.843",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T03:51:22.666",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T03:53:31.661",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-22T07:04:09.638",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:37:58.454",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:40:07.363",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-23T15:44:26.736",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:42:19.757",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:46:37.574",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png",
+        "time": "2025-08-24T04:48:46.483",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png",
+        "time": "2025-08-25T19:48:46.051",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png",
+        "time": "2026-02-08T00:35:49.632",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png",
+        "time": "2026-02-08T00:37:58.541",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:25:31.094",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:27:41.558",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png",
+        "time": "2026-02-09T12:29:50.467",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:01:06.499",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:05:24.403",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-12T17:07:33.312",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-13T23:56:30.653",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-14T00:00:48.470",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png",
+        "time": "2026-02-14T00:02:57.379",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png",
+        "time": "2026-02-16T10:37:37.574",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:25:36.048",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:27:44.957",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-20T19:32:02.861",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:21:54.662",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:26:12.566",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T00:28:21.475",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:15:26.006",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:17:35.002",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-21T05:19:43.910",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:45:58.061",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:48:06.970",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T00:52:24.787",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png"
+      },
+      {
+        "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png",
+        "time": "2026-08-22T05:39:15.581",
+        "band": "SPHEREx-D2",
+        "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png"
+      }
+    ],
+    "bands": {
+      "SPHEREx-D2": [
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T00:29:17.030",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_1D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T00:31:26.026",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_2D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T00:35:43.843",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0098_4D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T03:51:22.666",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0122_3D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T03:53:31.661",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0122_4D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-22T07:04:09.638",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0144_1D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-23T15:37:58.454",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_1D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-23T15:40:07.363",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_2D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-23T15:44:26.736",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0406_4D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-24T04:42:19.757",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_1D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-24T04:46:37.574",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_3D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png",
+          "time": "2025-08-24T04:48:46.483",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W34_2B_0501_4D2_spx_l2b-v27-2026-229.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png",
+          "time": "2025-08-25T19:48:46.051",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2025W35_1A_0171_1D2_spx_l2b-v27-2026-230.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png",
+          "time": "2026-02-08T00:35:49.632",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W06_2A_0505_2D2_spx_l2b-v27-2026-222.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png",
+          "time": "2026-02-08T00:37:58.541",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W06_2A_0505_3D2_spx_l2b-v27-2026-222.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png",
+          "time": "2026-02-09T12:25:31.094",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_1D2_spx_l2b-v27-2026-225.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png",
+          "time": "2026-02-09T12:27:41.558",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_2D2_spx_l2b-v27-2026-225.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png",
+          "time": "2026-02-09T12:29:50.467",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_1A_0119_3D2_spx_l2b-v27-2026-225.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-12T17:01:06.499",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_1D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-12T17:05:24.403",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_3D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-12T17:07:33.312",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0045_4D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-13T23:56:30.653",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_1D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-14T00:00:48.470",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_3D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png",
+          "time": "2026-02-14T00:02:57.379",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W07_2A_0292_4D2_spx_l2b-v27-2026-226.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png",
+          "time": "2026-02-16T10:37:37.574",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W08_1A_0090_1D2_spx_l2b-v27-2026-227.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-20T19:25:36.048",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_1D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-20T19:27:44.957",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_2D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-20T19:32:02.861",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0062_4D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T00:21:54.662",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_1D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T00:26:12.566",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_3D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T00:28:21.475",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0105_4D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T05:15:26.006",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_1D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T05:17:35.002",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_2D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-21T05:19:43.910",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0145_3D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-22T00:45:58.061",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_1D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-22T00:48:06.970",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_2D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-22T00:52:24.787",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0321_4D2_spx_l2b-v27-2026-243.png"
+        },
+        {
+          "url": "img/pleiades/0p2/D2/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png",
+          "time": "2026-08-22T05:39:15.581",
+          "band": "SPHEREx-D2",
+          "diff_url": "img/pleiades/0p2/D2/diff/level2_2026W34_2A_0363_1D2_spx_l2b-v27-2026-243.png"
+        }
+      ]
+    },
+    "band_ranges": {
+      "SPHEREx-D1": [
+        0.75,
+        1.09
+      ],
+      "SPHEREx-D2": [
+        1.1,
+        1.62
+      ],
+      "SPHEREx-D3": [
+        1.63,
+        2.41
+      ],
+      "SPHEREx-D4": [
+        2.42,
+        3.82
+      ],
+      "SPHEREx-D5": [
+        3.83,
+        4.41
+      ],
+      "SPHEREx-D6": [
+        4.42,
+        5.0
+      ]
+    }
   }
 ]

@@ -65,6 +65,9 @@
 
     .controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
 
+    #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 14px; }
+    #smoothLabel input { accent-color: var(--accent); }
+
     button {
       font: inherit;
       color: var(--text);
@@ -88,9 +91,9 @@
     .answers { display: flex; flex-direction: column; gap: 8px; }
     .answers button { text-align: left; }
 
-    #badImageForm { margin-top: 10px; }
-    #badImageForm label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 14px; }
-    #badImageForm textarea {
+    #commentBox { margin-top: 10px; }
+    #commentBox label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 14px; }
+    #commentBox textarea {
       width: 100%;
       font: inherit;
       color: var(--text);
@@ -100,10 +103,8 @@
       padding: 9px 12px;
       resize: vertical;
     }
-    #badImageForm textarea:focus { outline: none; border-color: var(--accent); }
-    #badImageForm .row { align-items: center; }
-    #badImageForm a { color: var(--muted); font-size: 14px; }
-    #badImageForm a:hover { color: var(--accent); }
+    #commentBox textarea:focus { outline: none; border-color: var(--accent); }
+    #commentCount { margin: 4px 0 0; color: var(--muted); font-size: 12px; text-align: right; }
 
     #status { min-height: 1.5em; margin: 10px 0 0; color: var(--accent); font-size: 14px; }
 
@@ -175,6 +176,10 @@
         <button id="playBtn">Pause</button>
         <input id="slider" type="range" min="0" value="0" aria-label="Frame">
       </div>
+      <label id="smoothLabel">
+        <input type="checkbox" id="smoothToggle">
+        Smooth display (doesn't add detail)
+      </label>
     </section>
 
     <!-- right: instructions, answers, browse -->
@@ -194,15 +199,11 @@
           <button onclick="submitAnswer('moved')">A bright spot moved</button>
           <button onclick="submitAnswer('brightness')">A bright spot changed brightness</button>
           <button onclick="submitAnswer('nothing')">Nothing changed</button>
-          <button onclick="showBadImageForm()">Bad image (blurry or cut off)</button>
         </div>
-        <div id="badImageForm" style="display:none">
-          <label for="badImageComment">What was wrong with it? (optional)</label>
-          <textarea id="badImageComment" maxlength="500" rows="3"></textarea>
-          <div class="row">
-            <button id="badImageSubmit">Submit</button>
-            <a href="#" id="badImageCancel">Cancel</a>
-          </div>
+        <div id="commentBox">
+          <label for="comment">Anything to add? Spotted something odd, or a bad image? (optional)</label>
+          <textarea id="comment" maxlength="500" rows="3"></textarea>
+          <p id="commentCount">0/500</p>
         </div>
         <div id="status" role="status" aria-live="polite"></div>
       </div>
@@ -256,10 +257,18 @@
     const fieldList = document.getElementById('fieldList');
     const noMatch   = document.getElementById('noMatch');
     const answerBtns = document.querySelectorAll('.answers button');
-    const badImageForm = document.getElementById('badImageForm');
-    const badImageComment = document.getElementById('badImageComment');
-    const badImageSubmitBtn = document.getElementById('badImageSubmit');
-    const badImageCancelLink = document.getElementById('badImageCancel');
+    const comment = document.getElementById('comment');
+    const commentCount = document.getElementById('commentCount');
+    const smoothToggle = document.getElementById('smoothToggle');
+
+    // image-rendering only changes how the browser displays the pixels; the
+    // underlying PNG files are untouched either way
+    smoothToggle.checked = localStorage.getItem('smooth') === '1';
+    frameImg.style.imageRendering = smoothToggle.checked ? 'auto' : 'pixelated';
+    smoothToggle.onchange = () => {
+      frameImg.style.imageRendering = smoothToggle.checked ? 'auto' : 'pixelated';
+      localStorage.setItem('smooth', smoothToggle.checked ? '1' : '0');
+    };
 
     let targets = [];        // all targets from targets.json
     let currentTarget = null;
@@ -328,31 +337,17 @@
       noMatch.style.display = shown.length ? 'none' : 'block';
     }
 
-    function showBadImageForm() {
-      answerBtns.forEach(b => b.disabled = true);
-      badImageComment.value = '';
-      badImageForm.style.display = 'block';
-      badImageComment.focus();
-    }
-    function hideBadImageForm() {
-      badImageForm.style.display = 'none';
-      answerBtns.forEach(b => b.disabled = false);
-    }
-    badImageCancelLink.onclick = (e) => { e.preventDefault(); hideBadImageForm(); };
-    badImageSubmitBtn.onclick = () => {
-      const comment = badImageComment.value.trim().slice(0, 500) || null;
-      hideBadImageForm();
-      submitAnswer('bad_image', comment);
-    };
+    comment.oninput = () => { commentCount.textContent = `${comment.value.length}/500`; };
 
-    async function submitAnswer(answer, comment = null) {
+    async function submitAnswer(answer) {
       if (!currentTarget) return;
+      const commentText = comment.value.trim().slice(0, 500) || null;
       answerBtns.forEach(b => b.disabled = true);
       const { error } = await sb.from('classifications').insert({
         target_id: currentTarget.id,
         answer: answer,
         session_id: sessionId,
-        comment: comment
+        comment: commentText
       });
       answerBtns.forEach(b => b.disabled = false);
       if (error) {
@@ -360,6 +355,8 @@
         statusP.textContent = 'Could not save: ' + error.message;
         return;
       }
+      comment.value = '';
+      commentCount.textContent = '0/500';
       if (!done.includes(currentTarget.id)) {
         done.push(currentTarget.id);
         localStorage.setItem('done', JSON.stringify(done));
