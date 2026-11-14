@@ -88,6 +88,23 @@
     .answers { display: flex; flex-direction: column; gap: 8px; }
     .answers button { text-align: left; }
 
+    #badImageForm { margin-top: 10px; }
+    #badImageForm label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 14px; }
+    #badImageForm textarea {
+      width: 100%;
+      font: inherit;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 9px 12px;
+      resize: vertical;
+    }
+    #badImageForm textarea:focus { outline: none; border-color: var(--accent); }
+    #badImageForm .row { align-items: center; }
+    #badImageForm a { color: var(--muted); font-size: 14px; }
+    #badImageForm a:hover { color: var(--accent); }
+
     #status { min-height: 1.5em; margin: 10px 0 0; color: var(--accent); font-size: 14px; }
 
     aside ul.tips { margin: 0; padding-left: 20px; color: var(--muted); }
@@ -177,7 +194,15 @@
           <button onclick="submitAnswer('moved')">A bright spot moved</button>
           <button onclick="submitAnswer('brightness')">A bright spot changed brightness</button>
           <button onclick="submitAnswer('nothing')">Nothing changed</button>
-          <button onclick="submitAnswer('bad_image')">Bad image (blurry or cut off)</button>
+          <button onclick="showBadImageForm()">Bad image (blurry or cut off)</button>
+        </div>
+        <div id="badImageForm" style="display:none">
+          <label for="badImageComment">What was wrong with it? (optional)</label>
+          <textarea id="badImageComment" maxlength="500" rows="3"></textarea>
+          <div class="row">
+            <button id="badImageSubmit">Submit</button>
+            <a href="#" id="badImageCancel">Cancel</a>
+          </div>
         </div>
         <div id="status" role="status" aria-live="polite"></div>
       </div>
@@ -231,6 +256,10 @@
     const fieldList = document.getElementById('fieldList');
     const noMatch   = document.getElementById('noMatch');
     const answerBtns = document.querySelectorAll('.answers button');
+    const badImageForm = document.getElementById('badImageForm');
+    const badImageComment = document.getElementById('badImageComment');
+    const badImageSubmitBtn = document.getElementById('badImageSubmit');
+    const badImageCancelLink = document.getElementById('badImageCancel');
 
     let targets = [];        // all targets from targets.json
     let currentTarget = null;
@@ -299,13 +328,31 @@
       noMatch.style.display = shown.length ? 'none' : 'block';
     }
 
-    async function submitAnswer(answer) {
+    function showBadImageForm() {
+      answerBtns.forEach(b => b.disabled = true);
+      badImageComment.value = '';
+      badImageForm.style.display = 'block';
+      badImageComment.focus();
+    }
+    function hideBadImageForm() {
+      badImageForm.style.display = 'none';
+      answerBtns.forEach(b => b.disabled = false);
+    }
+    badImageCancelLink.onclick = (e) => { e.preventDefault(); hideBadImageForm(); };
+    badImageSubmitBtn.onclick = () => {
+      const comment = badImageComment.value.trim().slice(0, 500) || null;
+      hideBadImageForm();
+      submitAnswer('bad_image', comment);
+    };
+
+    async function submitAnswer(answer, comment = null) {
       if (!currentTarget) return;
       answerBtns.forEach(b => b.disabled = true);
       const { error } = await sb.from('classifications').insert({
         target_id: currentTarget.id,
         answer: answer,
-        session_id: sessionId
+        session_id: sessionId,
+        comment: comment
       });
       answerBtns.forEach(b => b.disabled = false);
       if (error) {
