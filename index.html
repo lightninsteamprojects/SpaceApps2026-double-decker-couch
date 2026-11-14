@@ -14,12 +14,20 @@
       --text: #e8eaee;
       --muted: #98a0b0;
       --accent: #5b9bff;
+      --s: calc(min(calc(100dvh - 230px), 52vw) * 0.9);  /* viewer column / image width+height at >=1200px */
+      --scroll-thumb: #3a4252;
+      --scroll-thumb-hover: #4a5468;
+      color-scheme: dark;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: var(--line) var(--bg); }
+    *::-webkit-scrollbar { width: 10px; height: 10px; }
+    *::-webkit-scrollbar-track { background: var(--bg); }
+    *::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+
+    html, body { margin: 0; }
 
     body {
-      margin: 0;
       background: var(--bg);
       color: var(--text);
       font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -27,64 +35,215 @@
       line-height: 1.55;
     }
 
-    header {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 24px 20px 8px;
+    /* the page itself must not scroll at this size -- #viewerCol's content is
+       allowed to overflow its own grid cell (so it doesn't get an inner scrollbar),
+       but without this, that overflow extends past the viewport and the whole
+       page gets a scrollbar. html/body overflow:hidden clips it instead. */
+    @media (min-width: 1200px) and (min-height: 600px) {
+      html, body { overflow: hidden; height: 100%; }
     }
-    header h1 { margin: 0; font-size: 24px; font-weight: 600; }
-    header p  { margin: 4px 0 0; color: var(--muted); }
+
+    header {
+      height: 56px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { margin: 0; font-size: 20px; font-weight: 600; white-space: nowrap; flex: 0 0 auto; }
+    header p  {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #progressBadge { flex: 0 0 auto; margin-left: auto; }
 
     main {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 16px 20px 40px;
+      padding: 8px 24px 16px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 340px;
-      gap: 28px;
+      grid-template-columns: 1fr;
+      grid-template-areas: "viewer" "answer" "browse";
+      gap: 24px;
       align-items: start;
     }
-    @media (max-width: 820px) {
-      main { grid-template-columns: 1fr; }
+    #viewerCol { grid-area: viewer; }
+
+    /* #answerCol and #browseCol read as separate panels: a slightly lighter
+       background than the page, a thin border, rounded corners, inner padding */
+    #answerCol, #browseCol {
+      grid-area: answer;  /* #browseCol overrides this to "browse" below */
+      position: relative;
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--scroll-thumb) var(--bg);
+    }
+    #browseCol { grid-area: browse; }
+    #answerCol::-webkit-scrollbar, #browseCol::-webkit-scrollbar { width: 10px; }
+    #answerCol::-webkit-scrollbar-track, #browseCol::-webkit-scrollbar-track {
+      background: var(--bg);
+      border-radius: 10px;
+    }
+    #answerCol::-webkit-scrollbar-thumb, #browseCol::-webkit-scrollbar-thumb {
+      background: var(--scroll-thumb);
+      border-radius: 10px;
+    }
+    #answerCol::-webkit-scrollbar-thumb:hover, #browseCol::-webkit-scrollbar-thumb:hover {
+      background: var(--scroll-thumb-hover);
+    }
+
+    /* tightens the gap between the two side panels to 12px without touching the
+       main grid's own 24px gap (which still separates the viewer column as before) */
+    #browseCol { margin-top: -12px; }
+    @media (min-width: 1200px) and (min-height: 600px) {
+      #browseCol { margin-top: 0; margin-left: -12px; }
+    }
+
+    /* soft fade hinting there's more to scroll; JS toggles .hidden at the bottom */
+    .scrollFade {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 32px;
+      background: linear-gradient(to bottom, transparent, var(--box));
+      border-radius: 0 0 10px 10px;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity .15s;
+    }
+    .scrollFade.hidden { opacity: 0; }
+
+    @media (min-width: 900px) {
+      main {
+        grid-template-columns: 1.4fr 1fr;
+        grid-template-areas: "viewer answer" "viewer browse";
+      }
+    }
+    /* at this width the whole page is meant to fit the window with no scrolling --
+       #mainGrid's height is set from JS to the window height minus the header.
+       column 1 is exactly --s wide so the image fills it; the sidebars share the rest
+       and may scroll internally, but the viewer column itself must not */
+    @media (min-width: 1200px) and (min-height: 600px) {
+      main {
+        grid-template-columns: var(--s) minmax(300px, 1fr) minmax(260px, 0.7fr);
+        grid-template-areas: "viewer answer browse";
+        align-items: stretch;
+        overflow: hidden;
+      }
+      #viewerCol { overflow: visible; min-height: 0; }
+      #answerCol, #browseCol { min-height: 0; overflow-y: auto; }
     }
 
     /* ----- viewer ----- */
-    #heading { margin: 0 0 10px; font-size: 20px; font-weight: 600; }
+    #heading { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+
+    #imageWrap { position: relative; }
 
     #frame {
       display: block;
       width: 100%;
+      /* square, capped so the controls below it still fit on screen without
+         scrolling the column (fallback for < 1200px, overridden below) */
+      max-width: min(100%, calc(100vh - 280px));
+      max-height: calc(100vh - 280px);
       aspect-ratio: 1 / 1;
       object-fit: cover;
       image-rendering: pixelated;   /* keeps the real pixels sharp */
       background: #000;
       border: 1px solid var(--line);
+      cursor: pointer;
+    }
+    @media (min-width: 1200px) and (min-height: 600px) {
+      #imageWrap { width: var(--s); }
+      #frame { width: var(--s); height: var(--s); max-width: none; max-height: none; }
     }
 
-    #info { margin: 10px 0 0; color: var(--muted); font-size: 14px; min-height: 1.5em; }
+    #pausedLabel {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, .6);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      pointer-events: none;
+    }
 
-    .controls { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+    /* one line: photo number, date (large-ish within the line) and band */
+    #info { margin: 6px 0 0; color: var(--text); font-size: 18px; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #loadingLabel { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-    #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 14px; }
+    /* ----- timeline ----- */
+    #timelineDate { display: none; }  /* superseded by the date inside #info */
+    #timelineEnds { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+    /* prev/play/next/speed/slider all share one row */
+    .controls { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin-top: 6px; }
+    #prevBtn, #nextBtn, #playBtn { flex: 0 0 auto; padding: 7px 10px; }
+    #prevBtn, #nextBtn { width: 36px; }
+    #playBtn { width: 64px; }
+    #slider { flex: 1 1 auto; min-width: 100px; width: auto; margin-top: 0; accent-color: var(--accent); }
+    #speedSelect {
+      flex: 0 0 auto;
+      font: inherit;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--box);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 7px 8px;
+      cursor: pointer;
+    }
+
+    #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--muted); font-size: 13px; }
     #smoothLabel input { accent-color: var(--accent); }
 
     /* ----- band + mode pill buttons (share the same look) ----- */
-    .pillRow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .pillRow { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
     .pillBtn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 2px;
-      padding: 6px 10px;
-      font-size: 13px;
+      justify-content: center;
+      gap: 1px;
+      padding: 4px 8px;
+      min-height: 40px;
+      font-size: 12px;
     }
-    .pillBtn .range { font-size: 11px; color: var(--muted); }
+    .pillBtn .range { font-size: 10px; color: var(--muted); }
     .pillBtn.active { border-color: var(--accent); color: var(--accent); }
     .pillBtn.active .range { color: var(--accent); }
 
-    .hint { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+    .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-    #shareRow { margin-top: 14px; }
+    /* band note + description: small, capped at 2 lines so they can't push the
+       column taller than the no-scroll budget */
+    #bandNote, #bandDesc, #bandIceHint {
+      font-size: 11px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    #howItWorksLink { color: var(--accent); }
+
+    #shareRow { margin-top: 8px; }
+
+    /* "Viewing options" (band/mode/smooth/share, moved here from under the image) --
+       buttons here are compact so band + toggle + share all fit in one scrollable column */
+    #viewingOptions button, #viewingOptions select { padding: 7px 10px; font-size: 13px; }
+    #viewingOptions .row { align-items: center; flex-wrap: wrap; }
 
     button {
       font: inherit;
@@ -99,7 +258,7 @@
     button:disabled { opacity: .5; cursor: wait; }
 
     #playBtn { width: 80px; }
-    #slider { flex: 1; accent-color: var(--accent); }
+    #slider { display: block; width: 100%; margin-top: 4px; accent-color: var(--accent); }
 
     /* ----- side panel ----- */
     aside h2 { margin: 0 0 6px; font-size: 18px; font-weight: 600; }
@@ -200,11 +359,28 @@
     #tutorialText { font-size: 17px; }
 
     footer {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 0 20px 32px;
+      padding: 0 24px 24px;
       color: var(--muted);
       font-size: 13px;
+    }
+    /* the footer would push the page past the window height at this size,
+       breaking the no-scroll layout -- the same credit text already sits in #creditLine */
+    @media (min-width: 1200px) and (min-height: 600px) {
+      footer { display: none; }
+    }
+
+    /* landscape phones: the fixed-height no-scroll layout above only applies
+       when the window is both wide AND tall enough -- under 600px tall, fall
+       back to a normally-scrolling 2-column layout (image left, everything
+       else stacked and scrolling on the right), regardless of width */
+    @media (max-height: 599px) {
+      #mainGrid { height: auto !important; }  /* un-set the inline height JS applies at >=1200px wide */
+      main {
+        grid-template-columns: 1.4fr 1fr;
+        grid-template-areas: "viewer answer" "viewer browse";
+      }
+      #imageWrap, #frame { width: min(70vh, 45vw); }
+      #frame { height: min(70vh, 45vw); max-width: none; max-height: none; }
     }
   </style>
 </head>
@@ -216,54 +392,43 @@
     <p id="progressBadge"></p>
   </header>
 
-  <main>
+  <main id="mainGrid">
 
-    <!-- left: images -->
-    <section>
+    <!-- column 1: images -->
+    <section id="viewerCol">
       <h2 id="heading">Loading...</h2>
       <p id="fieldBlurb" style="display:none"></p>
       <p id="fieldFact" style="display:none"></p>
-      <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
+      <div id="imageWrap">
+        <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
+        <div id="pausedLabel" style="display:none">Paused</div>
+      </div>
       <div id="info"></div>
+      <p id="loadingLabel" style="display:none"></p>
+      <div id="timelineDate"></div>
+
       <div class="controls">
+        <button id="prevBtn" aria-label="Previous frame">◀</button>
         <button id="playBtn">Pause</button>
+        <button id="nextBtn" aria-label="Next frame">▶</button>
+        <select id="speedSelect" aria-label="Playback speed">
+          <option value="600">Slow</option>
+          <option value="300">Normal</option>
+          <option value="150">Fast</option>
+        </select>
         <input id="slider" type="range" min="0" value="0" aria-label="Frame">
       </div>
-      <label id="smoothLabel">
-        <input type="checkbox" id="smoothToggle">
-        Smooth display (doesn't add detail)
-      </label>
-
-      <!-- band picker: filled in by JS from t.bands, hidden if a target has none -->
-      <div id="bandRow" class="pillRow" style="display:none"></div>
-      <p id="bandNote" class="hint" style="display:none">Different bands are photographed on different dates.</p>
-      <p id="bandDesc" class="hint" style="display:none"></p>
-      <p id="bandIceHint" class="hint" style="display:none">Ice and dust features are found by comparing bands. A single photo may not show them clearly.</p>
-
-      <!-- normal / difference toggle, only shown when the current band has diff images -->
-      <div id="modeRow" class="pillRow" style="display:none">
-        <button id="modeNormalBtn" class="pillBtn active">Normal</button>
-        <button id="modeDiffBtn" class="pillBtn">Difference</button>
+      <div id="timelineEnds">
+        <span id="timelineStart"></span>
+        <span id="timelineEnd"></span>
       </div>
-
-      <div id="shareRow" class="row">
-        <button id="downloadBtn">Download this photo</button>
-        <button id="copyImgBtn">Copy image</button>
-        <button id="downloadGifBtn" style="display:none">Download GIF</button>
-      </div>
-      <p class="hint"><a href="#" id="howCheckedLink">How we checked this</a></p>
-      <p id="creditLine" class="hint">SPHEREx / NASA/IPAC IRSA</p>
     </section>
 
-    <!-- right: instructions, answers, browse -->
-    <aside>
+    <!-- column 2: short instructions + answer + comment + viewing options -->
+    <aside id="answerCol">
       <div class="section">
         <h2>What to look for</h2>
-        <p>The photos flip through one spot in the sky. Stars stay in the same place. Watch for:</p>
-        <ul class="tips">
-          <li>a bright spot that <b>moves</b> from photo to photo</li>
-          <li>a bright spot that gets <b>brighter or fainter</b></li>
-        </ul>
+        <p>Stars stay still. Watch for a bright spot that moves, or gets brighter or fainter.</p>
         <p class="hint"><a href="#" id="howItWorksLink">How it works</a></p>
       </div>
 
@@ -282,6 +447,40 @@
         <div id="status" role="status" aria-live="polite"></div>
       </div>
 
+      <div class="section" id="viewingOptions">
+        <h2>Viewing options</h2>
+
+        <!-- band picker: filled in by JS from t.bands, hidden if a target has none -->
+        <div id="bandRow" class="pillRow" style="display:none"></div>
+        <p id="bandNote" class="hint" style="display:none">Different bands are photographed on different dates.</p>
+        <p id="bandDesc" class="hint" style="display:none"></p>
+        <p id="bandIceHint" class="hint" style="display:none">Ice and dust features are found by comparing bands. A single photo may not show them clearly.</p>
+
+        <div class="row">
+          <!-- normal / difference toggle, only shown when the current band has diff images -->
+          <div id="modeRow" class="pillRow" style="display:none">
+            <button id="modeNormalBtn" class="pillBtn active">Normal</button>
+            <button id="modeDiffBtn" class="pillBtn">Difference</button>
+          </div>
+          <label id="smoothLabel">
+            <input type="checkbox" id="smoothToggle">
+            Smooth display (doesn't add detail)
+          </label>
+        </div>
+
+        <div id="shareRow" class="row">
+          <button id="downloadBtn">Download this photo</button>
+          <button id="copyImgBtn">Copy image</button>
+          <button id="downloadGifBtn" style="display:none">Download GIF</button>
+        </div>
+        <p class="hint"><a href="#" id="howCheckedLink">How we checked this</a></p>
+        <p id="creditLine" class="hint">SPHEREx / NASA/IPAC IRSA</p>
+      </div>
+      <div id="answerFade" class="scrollFade" aria-hidden="true"></div>
+    </aside>
+
+    <!-- column 3: browse other fields + about -->
+    <aside id="browseCol">
       <div class="section">
         <h2>Browse fields</h2>
         <input id="search" type="search" placeholder="Search fields, or RA Dec e.g. 210.8 54.3" autocomplete="off">
@@ -298,6 +497,7 @@
         <h2>About</h2>
         <p>SPHEREx is a NASA space telescope that maps the whole sky in infrared light. Each answer you give is saved, so we can see where people agree.</p>
       </div>
+      <div id="browseFade" class="scrollFade" aria-hidden="true"></div>
     </aside>
 
   </main>
@@ -332,7 +532,16 @@
     const frameImg = document.getElementById('frame');
     const heading  = document.getElementById('heading');
     const info     = document.getElementById('info');
+    const imageWrap = document.getElementById('imageWrap');
+    const pausedLabel = document.getElementById('pausedLabel');
+    const loadingLabel = document.getElementById('loadingLabel');
+    const timelineDate = document.getElementById('timelineDate');
+    const timelineStart = document.getElementById('timelineStart');
+    const timelineEnd = document.getElementById('timelineEnd');
+    const prevBtn = document.getElementById('prevBtn');
     const playBtn  = document.getElementById('playBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const speedSelect = document.getElementById('speedSelect');
     const slider   = document.getElementById('slider');
     const statusP  = document.getElementById('status');
     const searchBox = document.getElementById('search');
@@ -479,15 +688,51 @@
       return keys.includes('SPHEREx-D2') ? 'SPHEREx-D2' : keys[0];
     }
 
+    speedSelect.value = localStorage.getItem('speed') || '300';
+    speedSelect.onchange = () => {
+      localStorage.setItem('speed', speedSelect.value);
+      if (timer) { pause(); play(); }  // restart the interval at the new speed
+    };
+
     function show(n) {
       i = n;
       const f = frames[i];
       frameImg.src = (currentMode === 'diff' && f.diff_url) ? f.diff_url : f.url;
       info.textContent = `Photo ${i + 1} of ${frames.length} · taken ${f.time.slice(0, 10)} · band ${f.band}`;
+      timelineDate.textContent = f.time.slice(0, 10);
       slider.value = i;
     }
-    function play()  { timer = setInterval(() => show((i + 1) % frames.length), 300); playBtn.textContent = 'Pause'; }
-    function pause() { clearInterval(timer); timer = null; playBtn.textContent = 'Play'; }
+    function renderTimelineEnds() {
+      timelineStart.textContent = frames[0].time.slice(0, 10);
+      timelineEnd.textContent = frames[frames.length - 1].time.slice(0, 10);
+    }
+    function updatePlayState() {
+      const paused = !timer;
+      playBtn.textContent = paused ? 'Play' : 'Pause';
+      pausedLabel.style.display = paused ? 'block' : 'none';
+    }
+    function play()  { timer = setInterval(() => show((i + 1) % frames.length), Number(speedSelect.value)); updatePlayState(); }
+    function pause() { clearInterval(timer); timer = null; updatePlayState(); }
+    let loading = false;
+    function togglePlay() { if (loading) return; timer ? pause() : play(); }
+    function step(delta) { if (loading) return; pause(); show((i + delta + frames.length) % frames.length); }
+
+    // wait for every frame of the field to be downloaded and decoded before
+    // starting to blink through them, so playback doesn't stutter on late-arriving images
+    async function preloadFrames(list) {
+      const urls = [];
+      list.forEach(f => { urls.push(f.url); if (f.diff_url) urls.push(f.diff_url); });
+      let loaded = 0;
+      loadingLabel.style.display = 'block';
+      loadingLabel.textContent = `Loading photos... 0 of ${urls.length}`;
+      await Promise.all(urls.map(src => {
+        const img = new Image();
+        img.src = src;
+        const ready = img.decode ? img.decode().catch(() => {}) : new Promise(r => { img.onload = r; img.onerror = r; });
+        return ready.then(() => { loaded++; loadingLabel.textContent = `Loading photos... ${loaded} of ${urls.length}`; });
+      }));
+      loadingLabel.style.display = 'none';
+    }
 
     // address bar: #id/band/mode, or just #id for a target with no bands
     function updateHash(push) {
@@ -583,13 +828,17 @@
       }
       currentMode = (mode === 'diff' && frames.length && frames[0].diff_url) ? 'diff' : 'normal';
 
-      frames.forEach(f => {       // preload both views so switching is instant
-        new Image().src = f.url;
-        if (f.diff_url) new Image().src = f.diff_url;
-      });
       slider.max = frames.length - 1;
+      renderTimelineEnds();
       show(0);
-      play();
+      updatePlayState();
+      loading = true;
+      prevBtn.disabled = playBtn.disabled = nextBtn.disabled = true;
+      preloadFrames(frames).then(() => {
+        loading = false;
+        prevBtn.disabled = playBtn.disabled = nextBtn.disabled = false;
+        play();
+      });
 
       renderBandRow(t);
       renderModeRow();
@@ -716,9 +965,24 @@
       openField(next.target.id, true);
     }
 
-    playBtn.onclick = () => (timer ? pause() : play());
-    slider.oninput  = () => { pause(); show(Number(slider.value)); };
+    playBtn.onclick = togglePlay;
+    frameImg.onclick = togglePlay;
+    prevBtn.onclick = () => step(-1);
+    nextBtn.onclick = () => step(1);
+    slider.oninput  = () => { if (loading) return; pause(); show(Number(slider.value)); };
     searchBox.oninput = renderList;
+
+    // space plays/pauses, left/right steps a frame, 1/2/3 answer -- ignored while
+    // typing in the comment box or a modal (tutorial / how we checked this) is open
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement === comment || modalOverlay.style.display === 'flex') return;
+      if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'ArrowLeft') { step(-1); }
+      else if (e.key === 'ArrowRight') { step(1); }
+      else if (e.key === '1') { submitAnswer('moved'); }
+      else if (e.key === '2') { submitAnswer('brightness'); }
+      else if (e.key === '3') { submitAnswer('nothing'); }
+    });
 
     // mode toggle keeps the same field/band/frame index, just restarts nothing
     modeNormalBtn.onclick = () => {
@@ -786,6 +1050,36 @@
     window.addEventListener('popstate', () => {
       const h = parseHash();
       if (h) openField(h.id, false, h.band, h.mode);
+    });
+
+    // at >= 1200px wide the three columns are meant to fill the window with no
+    // page scrolling -- size the grid to exactly the window height minus the header
+    const mainGrid = document.getElementById('mainGrid');
+    function sizeMainGrid() {
+      if (window.innerWidth >= 1200) {
+        const headerH = document.querySelector('header').getBoundingClientRect().height;
+        mainGrid.style.height = `calc(100dvh - ${headerH}px)`;
+      } else {
+        mainGrid.style.height = '';
+      }
+    }
+    window.addEventListener('resize', sizeMainGrid);
+    sizeMainGrid();
+
+    // scroll hint: hide each panel's bottom fade once it's scrolled to the bottom,
+    // or if its content doesn't overflow in the first place
+    [['answerCol', 'answerFade'], ['browseCol', 'browseFade']].forEach(([panelId, fadeId]) => {
+      const panel = document.getElementById(panelId);
+      const fade = document.getElementById(fadeId);
+      const update = () => {
+        const atBottom = panel.scrollHeight - panel.scrollTop - panel.clientHeight < 2;
+        const scrollable = panel.scrollHeight > panel.clientHeight + 1;
+        fade.classList.toggle('hidden', !scrollable || atBottom);
+      };
+      panel.addEventListener('scroll', update);
+      window.addEventListener('resize', update);
+      new MutationObserver(update).observe(panel, { childList: true, subtree: true });
+      update();
     });
 
     renderProgress();
