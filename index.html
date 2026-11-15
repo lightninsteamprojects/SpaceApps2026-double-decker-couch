@@ -236,11 +236,21 @@
 
     .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-    /* reference-image card (Browse tab): image height is capped so the tab doesn't start scrolling */
-    #refCard { margin-top: 10px; }
+    /* Browse tab never scrolls: the section is a flex column, search/buttons keep their size,
+       the field list shrinks first when space runs out, and the reference card takes the rest */
+    #browseTab { overflow: hidden; }
+    #browseTab .section { display: flex; flex-direction: column; flex: 1; min-height: 0; margin-bottom: 0; }
+    #browseTab .section > * { flex: 0 0 auto; }
+    #browseTab #fieldList { flex: 0 1 auto; min-height: 0; }
+    #browseTab #refCard { flex: 1 1 0; min-height: 190px; display: flex; flex-direction: column; margin-top: 10px; }
     #refCard h3 { margin: 0 0 6px; font-size: 13px; }
-    #refImg { display: block; max-width: 100%; max-height: 130px; width: auto; border-radius: 6px; }
+    /* the image area is a size container so the square image can be sized to whichever of
+       width/height is smaller, so it fills the space and the border hugs the picture */
+    #refImgWrap { flex: 1 1 0; min-height: 120px; display: flex; align-items: center; justify-content: center; container-type: size; }
+    #refImg { width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; cursor: zoom-in; }
     #refCard .hint { font-size: 11px; margin-top: 4px; }
+    #refLightbox { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .85); display: none; align-items: center; justify-content: center; cursor: zoom-out; }
+    #refLightbox img { width: min(90vw, 90vh); height: min(90vw, 90vh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; }
 
     /* band note + description: small, capped at 2 lines so they can't push the
        column taller than the no-scroll budget */
@@ -600,7 +610,7 @@
           <!-- reference image of the current field from another telescope (hidden if there is none) -->
           <div id="refCard" style="display:none">
             <h3>Same patch of sky, another telescope</h3>
-            <img id="refImg" alt="Reference image of this field">
+            <div id="refImgWrap"><img id="refImg" alt="Reference image of this field (click to enlarge)"></div>
             <p id="refCaption" class="hint"></p>
             <p id="refCredit" class="hint"></p>
           </div>
@@ -880,7 +890,7 @@
     function renderRefCard(t) {
       const r = refData[t.id];
       const card = document.getElementById('refCard');
-      card.style.display = r ? 'block' : 'none';
+      card.style.display = r ? 'flex' : 'none';
       if (!r) return;
       document.getElementById('refImg').src = r.file;
       document.getElementById('refCaption').textContent =
@@ -888,6 +898,19 @@
         `bright stars should line up with the ones in the SPHEREx frames.`;
       document.getElementById('refCredit').textContent = r.credit;
     }
+
+    // click the reference image to see it larger; click or Esc closes
+    const refLightbox = document.createElement('div');
+    refLightbox.id = 'refLightbox';
+    refLightbox.innerHTML = '<img alt="Reference image, enlarged">';
+    document.body.appendChild(refLightbox);
+    const closeRef = () => { refLightbox.style.display = 'none'; };
+    document.getElementById('refImg').onclick = (e) => {
+      refLightbox.firstChild.src = e.target.src;
+      refLightbox.style.display = 'flex';
+    };
+    refLightbox.onclick = closeRef;
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRef(); });
 
     function renderProgress() {
       progressBadge.textContent = `Sky Scout: ${done.length} field${done.length === 1 ? '' : 's'} checked`;
