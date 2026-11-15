@@ -33,6 +33,7 @@ NASA Space Apps Challenge 2026 asks teams to describe the AI tools they used. Th
 ## Data and credits
 
 - Images: SPHEREx spectral images from the NASA/IPAC Infrared Science Archive (IRSA).
+- Reference images (comparison card in the Browse tab): 2MASS K-band images via NASA/IPAC IRSA, fetched by `prep/fetch_reference.py` (written with AI help), cropped to the same 0.2 degree field and arcsinh-stretched. NASA SkyView was tried first but its server could not reach the 2MASS archive, so it is not the source.
 - Libraries: astropy, astroquery, reproject, numpy, scipy, Pillow, s3fs.
 - Hosting: Netlify. Database: Supabase.
 

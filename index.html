@@ -236,6 +236,12 @@
 
     .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
+    /* reference-image card (Browse tab): image height is capped so the tab doesn't start scrolling */
+    #refCard { margin-top: 10px; }
+    #refCard h3 { margin: 0 0 6px; font-size: 13px; }
+    #refImg { display: block; max-width: 100%; max-height: 130px; width: auto; border-radius: 6px; }
+    #refCard .hint { font-size: 11px; margin-top: 4px; }
+
     /* band note + description: small, capped at 2 lines so they can't push the
        column taller than the no-scroll budget */
     #bandNote, #bandDesc, #bandIceHint {
@@ -591,6 +597,13 @@
             <button id="randomBtn">Random field</button>
             <button id="copyBtn">Copy link</button>
           </div>
+          <!-- reference image of the current field from another telescope (hidden if there is none) -->
+          <div id="refCard" style="display:none">
+            <h3>Same patch of sky, another telescope</h3>
+            <img id="refImg" alt="Reference image of this field">
+            <p id="refCaption" class="hint"></p>
+            <p id="refCredit" class="hint"></p>
+          </div>
         </div>
       </div>
 
@@ -860,6 +873,20 @@
       if (f && f.blurb) fieldBlurb.textContent = f.blurb;
       fieldFact.style.display = (f && f.fact) ? 'block' : 'none';
       if (f && f.fact) fieldFact.textContent = f.fact;
+    }
+
+    // reference image card: shown only when ref.json has an entry for this field
+    let refData = {};
+    function renderRefCard(t) {
+      const r = refData[t.id];
+      const card = document.getElementById('refCard');
+      card.style.display = r ? 'block' : 'none';
+      if (!r) return;
+      document.getElementById('refImg').src = r.file;
+      document.getElementById('refCaption').textContent =
+        `${r.survey} image of this field for comparison, from NASA/IPAC IRSA. Different telescope, different resolution; ` +
+        `bright stars should line up with the ones in the SPHEREx frames.`;
+      document.getElementById('refCredit').textContent = r.credit;
     }
 
     function renderProgress() {
@@ -1145,6 +1172,7 @@
       currentTarget = t;
       heading.textContent = t.label;
       renderFieldInfo(t);
+      renderRefCard(t);
 
       const b = bandsOf(t);
       if (b) {
@@ -1477,6 +1505,11 @@
       .then(r => r.ok ? r.json() : {})
       .then(data => { fields = data; if (currentTarget) renderFieldInfo(currentTarget); })
       .catch(() => { fields = {}; });
+
+    fetch('ref.json')
+      .then(r => r.ok ? r.json() : {})
+      .then(data => { refData = data; if (currentTarget) renderRefCard(currentTarget); })
+      .catch(() => { refData = {}; });
 
     fetch('flags.json')
       .then(r => r.ok ? r.json() : {})

@@ -1,0 +1,42 @@
+{
+ "pleiades": {
+  "file": "img/ref/pleiades.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "galactic_center": {
+  "file": "img/ref/galactic_center.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "north_pole": {
+  "file": "img/ref/north_pole.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "south_pole": {
+  "file": "img/ref/south_pole.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "m101": {
+  "file": "img/ref/m101.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "beehive": {
+  "file": "img/ref/beehive.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "ecliptic0": {
+  "file": "img/ref/ecliptic0.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ },
+ "ecliptic180": {
+  "file": "img/ref/ecliptic180.jpg",
+  "survey": "2MASS K-band",
+  "credit": "2MASS images via NASA/IPAC IRSA"
+ }
+}
