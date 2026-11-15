@@ -16,6 +16,7 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from reproject import reproject_interp
+from reproject.mosaicking import reproject_and_coadd
 from astropy.wcs import WCS
 
 SIZE_DEG = 0.2   # same sky area as the SPHEREx field images (the "0p2" folders)
@@ -32,19 +33,21 @@ def tile_urls(ra, dec, letter):
 
 
 def mosaic(urls, ra, dec):
-    """The field usually straddles tile edges, so reproject every overlapping tile onto one
-    shared north-up 600 px grid (same idea as the SPHEREx frames) and average where they overlap."""
+    """Same grid as the SPHEREx frames (build_target_wcs in test_one.py: TAN, north up, centred on the
+    field, covering SIZE_DEG) but 600 px across instead of 128, so 2MASS detail is kept.
+    The field usually straddles tile edges, so all overlapping tiles are mosaicked (with their
+    background levels matched) and reprojected in one go."""
     w = WCS(naxis=2)
-    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
-    w.wcs.crval = [ra, dec]
     w.wcs.crpix = [NPIX / 2 + 0.5, NPIX / 2 + 0.5]
-    w.wcs.cdelt = [-SIZE_DEG / NPIX, SIZE_DEG / NPIX]   # north up, east left
-    layers = []
+    w.wcs.cdelt = [-SIZE_DEG / NPIX, SIZE_DEG / NPIX]
+    w.wcs.crval = [ra, dec]
+    w.wcs.ctype = ["RA---TAN", "DEC--TAN"]
+    tiles = []
     for url in urls:
         hdu = fits.open(io.BytesIO(requests.get(url, timeout=120).content))[0]
-        layer = reproject_interp((hdu.data, WCS(hdu.header)), w, shape_out=(NPIX, NPIX), return_footprint=False)
-        layers.append(layer - np.nanmedian(layer))   # each tile has its own background level; remove it so seams vanish
-    out = np.nanmean(layers, axis=0)
+        tiles.append((hdu.data, WCS(hdu.header)))
+    out, _ = reproject_and_coadd(tiles, w, shape_out=(NPIX, NPIX), reproject_function=reproject_interp,
+                                 match_background=True)
     if np.isnan(out).mean() > 0.02:
         raise ValueError("tiles do not cover the whole field")
     return out
@@ -55,6 +58,7 @@ def to_jpg(data, path):
     lo, hi = np.percentile(data, [1, 99.7])          # clip the dark sky and the brightest stars
     x = np.clip((data - lo) / (hi - lo), 0, 1)
     x = np.arcsinh(10 * x) / np.arcsinh(10)          # arcsinh stretch: faint stuff visible, stars not blown out
+    x = np.flipud(x)                                 # array row 0 is south; image row 0 must be north (same flip as test_one.py)
     Image.fromarray((x * 255).astype(np.uint8)).save(path, quality=90)
 
 
