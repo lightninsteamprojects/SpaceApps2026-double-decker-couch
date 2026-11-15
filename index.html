@@ -34,14 +34,20 @@
       line-height: 1.55;
     }
 
-    /* wide AND tall enough: the page is exactly one window tall (100dvh) and never scrolls --
-       header on top, <main> takes whatever height is left. Shorter than ~560px (or narrower
-       than 1200px) none of this applies and the whole page simply scrolls vertically. */
+    /* wide AND tall enough: the body is a grid exactly one window tall (100dvh): header on top, <main>
+       in the remaining row, so on normal windows nothing scrolls. That row has a floor (the image's
+       minimum size ~376px plus the text/controls allowance), so on windows too short for it <main> simply
+       extends past the bottom and the whole page scrolls vertically instead of squashing the image.
+       Narrower than 1200px or shorter than ~560px none of this applies and the page scrolls as usual. */
     @media (min-width: 1200px) and (min-height: 560px) {
-      html, body { height: 100%; }
-      body { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
-      header { flex: 0 0 auto; }
-      main { flex: 1 1 auto; min-height: 0; }
+      body {
+        --rows: 16rem;        /* what the text rows + playback row under/over the image need */
+        --img-min: 23.75rem;  /* smallest the viewer image may get (380px) */
+        height: 100dvh;
+        display: grid;
+        /* floor = min image + rows + <main>'s own padding (1.5rem) */
+        grid-template-rows: auto minmax(calc(var(--img-min) + var(--rows) + 1.5rem), 1fr);
+      }
     }
 
     header {
@@ -136,7 +142,6 @@
        scroll internally; the viewer column never does. */
     @media (min-width: 1200px) and (min-height: 560px) {
       main {
-        --rows: 16rem;
         grid-template-columns: auto minmax(18rem, 1fr) minmax(16rem, 0.7fr);
         container-type: size;   /* lets #viewerCol size itself from the height <main> has (cqh) */
         grid-template-rows: minmax(0, 1fr);  /* an "auto" row would grow to the tallest column's content
@@ -161,7 +166,7 @@
     }
     /* short windows: spend less height on the description (1 line each; "More" expands it) so the image gets more */
     @media (min-width: 1200px) and (min-height: 560px) and (max-height: 760px) {
-      main { --rows: 17rem; }  /* 1-line description, 2-line info, slider on its own row */
+      body { --rows: 17rem; }  /* 1-line description, 2-line info, slider on its own row */
       main #fieldBlurb.clamped, main #fieldFact.clamped { -webkit-line-clamp: 1; line-clamp: 1; }
     }
 
@@ -235,6 +240,8 @@
 
     #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--muted); font-size: 13px; }
     #smoothLabel input { accent-color: var(--accent); }
+    #toggleRow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-top: 8px; }
+    #toggleRow #smoothLabel, #toggleRow #flagsLabel { margin-top: 0; }
 
     /* ----- band + mode pill buttons (share the same look) ----- */
     .pillRow { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
@@ -601,22 +608,23 @@
         </div>
         <p id="bandIceHint" class="hint" style="display:none">Ice and dust features are found by comparing bands. A single photo may not show them clearly.</p>
 
-        <div class="row">
-          <!-- normal / difference toggle, only shown when the current band has diff images -->
-          <div id="modeRow" class="pillRow" style="display:none">
-            <button id="modeNormalBtn" class="pillBtn active">Normal</button>
-            <button id="modeDiffBtn" class="pillBtn">Difference (experimental)</button>
-          </div>
+        <!-- normal / difference toggle, only shown when the current band has diff images -->
+        <div id="modeRow" class="pillRow" style="display:none">
+          <button id="modeNormalBtn" class="pillBtn active">Normal</button>
+          <button id="modeDiffBtn" class="pillBtn">Difference (experimental)</button>
+        </div>
+
+        <!-- the two display checkboxes share a row and wrap onto two lines if the column is narrow -->
+        <div id="toggleRow">
           <label id="smoothLabel">
             <input type="checkbox" id="smoothToggle">
             Smooth display (doesn't add detail)
           </label>
+          <label id="flagsLabel" style="display:none">
+            <input type="checkbox" id="flagsToggle">
+            Show detector flags
+          </label>
         </div>
-
-        <label id="flagsLabel" style="display:none">
-          <input type="checkbox" id="flagsToggle">
-          Show detector flags
-        </label>
         <p id="flagsLegend" class="hint" style="display:none">Red = pixels the detector pipeline flagged (saturation, cosmic rays, bad pixels, ghosts). These are likely artifacts, not real objects.</p>
 
         <div id="shareRow" class="row">
