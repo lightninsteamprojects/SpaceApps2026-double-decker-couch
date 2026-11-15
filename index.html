@@ -991,9 +991,10 @@
       playBtn.textContent = paused ? 'Play' : 'Pause';
       pausedLabel.style.display = paused ? 'block' : 'none';
     }
-    function play()  { timer = setInterval(() => show((i + 1) % frames.length), Number(speedSelect.value)); updatePlayState(); }
+    function play()  { clearInterval(timer); timer = setInterval(() => show((i + 1) % frames.length), Number(speedSelect.value)); updatePlayState(); }
     function pause() { clearInterval(timer); timer = null; updatePlayState(); }
     let loading = false;
+    let loadToken = 0;
     function togglePlay() { if (loading) return; timer ? pause() : play(); }
     function step(delta) { if (loading) return; pause(); show((i + delta + frames.length) % frames.length); }
 
@@ -1159,7 +1160,9 @@
       updatePlayState();
       loading = true;
       prevBtn.disabled = playBtn.disabled = nextBtn.disabled = true;
+      const myLoad = ++loadToken;
       preloadFrames(frames).then(() => {
+        if (myLoad !== loadToken) return;  // a newer field/band was opened meanwhile
         loading = false;
         prevBtn.disabled = playBtn.disabled = nextBtn.disabled = false;
         play();
