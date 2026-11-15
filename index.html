@@ -147,11 +147,11 @@
       }
       /* The column is as wide as the square image: the height <main> has (100cqh) minus what the
          text rows and playback row need (the description is clamped to 2 lines, so that is bounded:
-         ~12-15rem, with room for the "More" link), but never wider than 56% of <main> and never narrower
-         than the playback row needs (19.5rem). --rows is that text/controls allowance. */
+         ~14-17rem, with room for the "More" link), but never wider than 56% of <main> and never narrower
+         than the buttons need (17rem; the slider wraps below them if narrower than ~25rem). --rows is that text/controls allowance. */
       #viewerCol {
         min-height: 0;
-        width: clamp(19.5rem, min(100cqh - var(--rows), 56cqw), 100cqw);
+        width: clamp(17rem, min(100cqh - var(--rows), 56cqw), 100cqw);
         display: flex;
         flex-direction: column;
       }
@@ -161,7 +161,7 @@
     }
     /* short windows: spend less height on the description (1 line each; "More" expands it) so the image gets more */
     @media (min-width: 1200px) and (min-height: 560px) and (max-height: 760px) {
-      main { --rows: 13.5rem; }
+      main { --rows: 17rem; }  /* 1-line description, 2-line info, slider on its own row */
       main #fieldBlurb.clamped, main #fieldFact.clamped { -webkit-line-clamp: 1; line-clamp: 1; }
     }
 
@@ -208,7 +208,7 @@
     }
 
     /* one line: photo number, date (large-ish within the line) and band */
-    #info { margin: 6px 0 0; color: var(--text); font-size: 18px; min-height: 1.3em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #info { margin: 6px 0 0; color: var(--text); font-size: 18px; min-height: 1.3em; line-height: 1.3; overflow-wrap: anywhere; }  /* wraps to a 2nd line instead of an ellipsis */
     #loadingLabel { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
     /* ----- timeline ----- */
@@ -216,11 +216,11 @@
     #timelineEnds { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; margin-top: 2px; }
 
     /* prev/play/next/speed/slider all share one row */
-    .controls { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; margin-top: 6px; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 6px; }  /* wraps: slider drops to its own row when the column is too narrow */
     #prevBtn, #nextBtn, #playBtn { flex: 0 0 auto; padding: 7px 10px; }
     #prevBtn, #nextBtn { width: 36px; }
     #playBtn { width: 64px; }
-    #slider { flex: 1 1 auto; min-width: 4rem; width: auto; margin-top: 0; accent-color: var(--accent); }
+    #slider { flex: 1 1 10rem; min-width: 10rem; width: auto; margin-top: 0; accent-color: var(--accent); }
     #speedSelect {
       flex: 0 0 auto;
       font: inherit;
@@ -254,21 +254,35 @@
     .pillBtn.unavailable { opacity: .35; cursor: not-allowed; }
     .pillBtn.unavailable:hover { border-color: var(--line); }
 
+    /* short windows: smaller band/mode buttons that share the row evenly, so all six bands fit on one line when possible */
+    @media (max-height: 800px) {
+      .pillBtn { padding: 3px 6px; min-height: 34px; font-size: 11px; }
+      .pillBtn .range { font-size: 9px; }
+      #bandRow .pillBtn { flex: 1 1 0; min-width: 0; }
+    }
+
     .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-    /* Browse tab never scrolls: the section is a flex column, search/buttons keep their size,
-       the field list shrinks first when space runs out, and the reference card takes the rest */
-    #browseTab { overflow: hidden; }
-    #browseTab .section { display: flex; flex-direction: column; flex: 1; min-height: 0; margin-bottom: 0; }
+    /* Browse tab priorities: 1) search + field list (list never below ~170px, scrolls inside itself),
+       2) Random/Copy buttons, 3) reference card gets what is left (image shrinks to ~90px first, then
+       the caption is tucked behind an "i" button), 4) only then the whole tab scrolls. */
+    #browseTab { overflow-y: auto; }
+    #browseTab .section { display: flex; flex-direction: column; flex: 1 0 auto; margin-bottom: 0; }  /* grows to fill, never shrinks below its content */
     #browseTab .section > * { flex: 0 0 auto; }
-    #browseTab #fieldList { flex: 0 1 auto; min-height: 0; }
-    /* min-height is left at auto (= title + 120 px image area + caption + credit), so a long caption
-       is never squeezed: the field list shrinks first, then the image, down to its 120 px minimum */
+    #browseTab #fieldList { flex: 0 0 auto; min-height: 10.5rem; max-height: max(10.5rem, 24dvh); }
     #browseTab #refCard { flex: 1 1 0; display: flex; flex-direction: column; margin-top: 10px; }
-    #refCard h3 { margin: 0 0 6px; font-size: 13px; }
+    #refHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    #refHead h3 { margin: 0; }
+    #refInfoBtn { display: none; flex: 0 0 auto; width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 50%; font-size: 12px; line-height: 1; }
+    @media (min-width: 1200px) and (min-height: 560px) and (max-height: 880px) {
+      #refCaption { display: none; }
+      #refCard.showCaption #refCaption { display: block; }
+      #refInfoBtn { display: inline-block; }
+    }
+    #refCard h3 { font-size: 13px; }
     /* the image area is a size container so the square image can be sized to whichever of
        width/height is smaller, so it fills the space and the border hugs the picture */
-    #refImgWrap { flex: 1 1 0; min-height: 7.5rem; display: flex; align-items: center; justify-content: center; container-type: size; }
+    #refImgWrap { flex: 1 1 0; min-height: 5.6rem; display: flex; align-items: center; justify-content: center; container-type: size; }
     #refImg { width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; cursor: zoom-in; }
     #refCard .hint { font-size: 11px; margin-top: 4px; }
     #refLightbox { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .85); display: none; align-items: center; justify-content: center; cursor: zoom-out; }
@@ -636,7 +650,10 @@
           </div>
           <!-- reference image of the current field from another telescope (hidden if there is none) -->
           <div id="refCard" style="display:none">
-            <h3>Same patch of sky, another telescope</h3>
+            <div id="refHead">
+              <h3>Same patch of sky, another telescope</h3>
+              <button id="refInfoBtn" type="button" aria-label="About this image" title="About this image">i</button>
+            </div>
             <div id="refImgWrap"><img id="refImg" alt="Reference image of this field (click to enlarge)"></div>
             <p id="refCaption" class="hint"></p>
             <p id="refCredit" class="hint"></p>
@@ -984,6 +1001,8 @@
       refLightbox.style.display = 'flex';
     };
     refLightbox.onclick = closeRef;
+    // short windows hide the long caption; the "i" button shows/hides it
+    document.getElementById('refInfoBtn').onclick = () => document.getElementById('refCard').classList.toggle('showCaption');
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeRef(); });
 
     function renderProgress() {
@@ -1430,11 +1449,21 @@
     slider.oninput  = () => { if (loading) return; pause(); show(Number(slider.value)); };
     searchBox.oninput = renderList;
 
-    // space plays/pauses, left/right steps a frame, 1/2/3 answer -- ignored while
-    // typing in the comment box or a modal (tutorial / how we checked this) is open
+    // space plays/pauses, left/right steps a frame, 1/2/3 answer.
+    // Ignored while typing (any input / textarea / select / contenteditable, checked on both the
+    // event target and the focused element), while Ctrl/Alt/Meta is held (browser shortcuts), and
+    // while a modal is open. Space is also left alone when a button/link has focus, so it only
+    // activates that control (the browser does that) instead of ALSO toggling playback.
+    const isTyping = el => !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+    const isClickable = el => !!el && (/^(BUTTON|A|SUMMARY)$/.test(el.tagName) || el.getAttribute('role') === 'button');
     document.addEventListener('keydown', (e) => {
-      if (document.activeElement === comment || modalOverlay.style.display === 'flex') return;
-      if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+      if (e.ctrlKey || e.altKey || e.metaKey) return;
+      if (modalOverlay.style.display === 'flex') return;
+      if (isTyping(e.target) || isTyping(document.activeElement)) return;
+      if (e.key === ' ') {
+        if (isClickable(e.target) || isClickable(document.activeElement)) return;
+        e.preventDefault(); togglePlay();
+      }
       else if (e.key === 'ArrowLeft') { step(-1); }
       else if (e.key === 'ArrowRight') { step(1); }
       else if (e.key === '1') { submitAnswer('moved'); }
