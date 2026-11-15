@@ -4,3 +4,4 @@ __pycache__/
 .claude/
 
 targets.backup*.json
+Claude outputs/

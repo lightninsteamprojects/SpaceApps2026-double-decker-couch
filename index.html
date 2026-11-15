@@ -171,11 +171,24 @@
     }
 
     /* ----- viewer ----- */
-    #heading { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+    /* title row: name left, Inspect button right on the same line; wraps under the name when the column is narrow */
+    #titleRow { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; margin: 0 0 4px; }
+    #heading { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 18px; font-weight: 600; }
+    /* hint bubble: absolutely positioned under the button so showing it never moves anything (or shrinks the image) */
+    #inspectHint { position: absolute; right: 0; top: 100%; z-index: 6; max-width: min(18rem, 100%); margin: 6px 0 0; padding: 6px 10px; border-radius: 6px;
+      background: var(--accent); color: #0b1220; font-size: 13px; line-height: 1.35; box-shadow: 0 2px 8px rgba(0, 0, 0, .5); }
+    #inspectHint[hidden] { display: none; }
+    /* desktop layout: the row never grows a second line (that would take height from the image when the longer
+       "Inspecting: click a dot" label is shown), so a long field name is cut with an ellipsis instead (full name in the
+       tooltip). Narrower / phone layouts keep the wrapping above. */
+    @media (min-width: 1200px) and (min-height: 560px) {
+      #titleRow { flex-wrap: nowrap; }
+      #heading { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    }
 
     /* #imageBox is the square the image (and the flag overlay / Paused label) live in.
        Narrow/short layouts: as wide as its column, capped by window height. */
-    #imageBox { position: relative; width: 100%; max-width: min(100%, 70dvh); aspect-ratio: 1 / 1; }
+    #imageBox { container-type: inline-size; position: relative; width: 100%; max-width: min(100%, 70dvh); aspect-ratio: 1 / 1; }
     #frame {
       display: block;
       width: 100%;
@@ -240,6 +253,38 @@
 
     #smoothLabel { display: flex; align-items: center; gap: 6px; margin-top: 4px; color: var(--muted); font-size: 13px; }
     #smoothLabel input { accent-color: var(--accent); }
+
+    /* ----- Inspect a spot ----- */
+    /* normal-sized button, same height/border/font as Pause (7px/10px padding, inherited font, default button border) */
+    #inspectBtn { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; white-space: nowrap; }
+    #inspectBtn.active { background: var(--accent); border-color: var(--accent); color: #0b1220; font-weight: 600; }
+    #frame.inspecting { cursor: crosshair; }
+    /* the crosshair is a plain DOM element on top of the image (not part of the canvas that Copy image /
+       Download use), positioned in % of the image so it stays on the same sky spot while frames play */
+    #crosshair { position: absolute; width: 22px; height: 22px; transform: translate(-50%, -50%); pointer-events: none; }
+    #crosshair::before, #crosshair::after { content: ''; position: absolute; background: #ff4d4d; box-shadow: 0 0 2px #000; }
+    #crosshair::before { left: 50%; top: 0; width: 1px; height: 100%; }
+    #crosshair::after  { top: 50%; left: 0; height: 1px; width: 100%; }
+    /* compass (top-right, north up / east left) and scale bar (bottom-right); plain DOM on top of the image, so Copy
+       image / Download never include them, and pointer-events:none keeps clicks and the flag overlay working */
+    #compass { position: absolute; top: 8px; right: 8px; width: 11%; max-width: 48px; min-width: 28px; aspect-ratio: 1; pointer-events: none; filter: drop-shadow(0 0 1px #000); }
+    #scaleBar { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; color: #fff; font-size: 11px; line-height: 1.2; white-space: nowrap; text-shadow: 0 0 2px #000; }
+    #scaleBar i { display: block; width: calc(100cqw / 60 / var(--field-deg)); height: 0; margin-top: 2px; border-top: 1px solid #fff; box-shadow: 0 0 2px #000; }
+    #scaleBar::after { content: ''; display: block; align-self: flex-end; width: calc(100cqw / 60 / var(--field-deg)); height: 5px; margin-top: -3px; border: 0 solid #fff; border-width: 0 1px; }
+    #inspectCard { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+    #inspectHead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+    #inspectCard h3 { margin: 0; font-size: 14px; }
+    #inspectClear { font-size: 12px; color: var(--accent); }
+    #inspectRow { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    #inspectCoords { font-variant-numeric: tabular-nums; font-size: 14px; }
+    #inspectCopy { padding: 3px 10px; font-size: 12px; }
+    #inspectLinks a { color: var(--accent); }
+    #inspectStatus { margin: 6px 0 0; font-size: 13px; }
+    #inspectRetry { color: var(--accent); }
+    /* hover readout: bottom-left of the image (the scale bar is bottom-right, the compass top-right); mouse only */
+    #hoverCoords { position: absolute; left: 8px; bottom: 8px; padding: 2px 6px; border-radius: 3px; background: rgba(0, 0, 0, .6); color: #fff;
+      font: 11px/1.3 ui-monospace, 'Cascadia Mono', Consolas, monospace; white-space: nowrap; pointer-events: none; }
+    @media (hover: none) { #hoverCoords { display: none !important; } }
     #toggleRow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-top: 8px; }
     #toggleRow #smoothLabel, #toggleRow #flagsLabel { margin-top: 0; }
 
@@ -270,14 +315,20 @@
 
     .hint { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 
-    /* Browse tab priorities: 1) search + field list (list never below ~170px, scrolls inside itself),
-       2) Random/Copy buttons, 3) reference card gets what is left (image shrinks to ~90px first, then
-       the caption is tucked behind an "i" button), 4) only then the whole tab scrolls. */
-    #browseTab { overflow-y: auto; }
-    #browseTab .section { display: flex; flex-direction: column; flex: 1 0 auto; margin-bottom: 0; }  /* grows to fill, never shrinks below its content */
+    /* Browse tab: search, a field list that grows to fill the tab (never below ~4 rows) and scrolls inside
+       itself, and Random / Copy link under it. Nothing else scrolls. */
+    #browseTab { overflow: hidden; }
+    #browseTab .section { display: flex; flex-direction: column; flex: 1; min-height: 0; margin-bottom: 0; }
     #browseTab .section > * { flex: 0 0 auto; }
-    #browseTab #fieldList { flex: 0 0 auto; min-height: 10.5rem; max-height: max(10.5rem, 24dvh); }
-    #browseTab #refCard { flex: 1 1 0; display: flex; flex-direction: column; margin-top: 10px; }
+    #browseTab #fieldList { flex: 1 1 auto; min-height: 10.5rem; max-height: none; }
+
+    /* Sky tab: the Inspect results on top, the reference image card below taking all the remaining height
+       (image shrinks to ~90px first; on short windows the caption hides behind the "i" button). The tab only
+       scrolls as a last resort. */
+    #skyTab { overflow-y: auto; }
+    #skyTab .section { display: flex; flex-direction: column; flex: 1 0 auto; margin-bottom: 0; }
+    #skyTab .section > * { flex: 0 0 auto; }
+    #skyTab #refCard { flex: 1 1 0; display: flex; flex-direction: column; }
     #refHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
     #refHead h3 { margin: 0; }
     #refInfoBtn { display: none; flex: 0 0 auto; width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 50%; font-size: 12px; line-height: 1; }
@@ -403,7 +454,9 @@
        growing to fit a long comment list */
     #browseCol { display: flex; flex-direction: column; }
     .tabRow { flex: 0 0 auto; display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
-    .tabBtn { flex: 1; padding: 7px 6px; font-size: 13px; background: transparent; border-color: transparent; }
+    .tabBtn { flex: 1 1 auto; min-width: 0; padding: 7px 4px; font-size: 13px; white-space: nowrap; background: transparent; border-color: transparent; }
+    .tabDot { display: none; width: 6px; height: 6px; margin-left: 4px; border-radius: 50%; background: var(--accent); vertical-align: middle; }
+    .tabDot.on { display: inline-block; }
     .tabBtn.active { background: var(--bg); border-color: var(--line); color: var(--accent); }
     .tabCount { margin-left: 3px; color: var(--muted); font-size: 11px; }
     .tabBtn.active .tabCount { color: var(--accent); }
@@ -539,7 +592,16 @@
 
     <!-- column 1: images -->
     <section id="viewerCol">
-      <h2 id="heading">Loading...</h2>
+      <!-- title row: field name on the left, the Inspect button right-aligned on the same line (wraps under the title when narrow) -->
+      <div id="titleRow">
+        <h2 id="heading">Loading...</h2>
+        <button id="inspectBtn" type="button" aria-pressed="false" title="Click any star to get its sky position and check it in SIMBAD (shortcut: I)">
+          <svg id="inspectIcon" viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <circle cx="8" cy="8" r="4.2"/><path d="M8 0.8v4M8 11.2v4M0.8 8h4M11.2 8h4"/></svg>
+          <span id="inspectLabel">Inspect a spot</span>
+        </button>
+        <p id="inspectHint" role="status" hidden>New: turn on Inspect, then click any star to check it.</p>
+      </div>
       <p id="fieldBlurb" style="display:none"></p>
       <p id="fieldFact" style="display:none"></p>
       <button id="fieldMore" type="button" style="display:none">More</button>
@@ -547,6 +609,17 @@
         <div id="imageBox">
           <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
           <img id="flagOverlay" alt="" aria-hidden="true" style="display:none">
+          <div id="crosshair" aria-hidden="true" style="display:none"></div>
+          <div id="hoverCoords" aria-hidden="true" style="display:none"></div>
+          <div id="compass" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="100%" height="100%" fill="none" stroke="#fff" stroke-width="1">
+              <line x1="28" y1="34" x2="28" y2="10"/><polyline points="25,14 28,9 31,14"/>
+              <line x1="28" y1="34" x2="6" y2="34"/><polyline points="10,31 5,34 10,37"/>
+              <text x="28" y="7" text-anchor="middle" fill="#fff" stroke="none" font-size="7">N</text>
+              <text x="3" y="30" text-anchor="start" fill="#fff" stroke="none" font-size="7">E</text>
+            </svg>
+          </div>
+          <div id="scaleBar" aria-hidden="true"><span>1 arcmin</span><i></i></div>
           <div id="pausedLabel" style="display:none">Paused</div>
         </div>
       </div>
@@ -642,6 +715,7 @@
     <aside id="browseCol">
       <div class="tabRow">
         <button class="tabBtn active" data-tab="browseTab">Browse</button>
+        <button class="tabBtn" data-tab="skyTab">Sky<span id="skyDot" class="tabDot" aria-label="result waiting"></span></button>
         <button class="tabBtn" data-tab="discussionTab">Discussion<span id="discussionCount" class="tabCount"></span></button>
         <button class="tabBtn" data-tab="aboutTab">About</button>
       </div>
@@ -655,6 +729,26 @@
           <div class="row">
             <button id="randomBtn">Random field</button>
             <button id="copyBtn">Copy link</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabPanel" id="skyTab" style="display:none">
+        <div class="section">
+          <!-- "Inspect a spot": empty message until a spot is clicked, then coordinates, links and the catalogue check -->
+          <div id="inspectCard">
+            <div id="inspectHead"><h3>Inspect a spot</h3><a href="#" id="inspectClear">Clear</a></div>
+            <p id="inspectEmpty" class="hint">Turn on Inspect and click a dot to check it.</p>
+            <div id="inspectBody" style="display:none">
+              <div id="inspectRow"><span id="inspectCoords"></span><button id="inspectCopy" type="button">Copy</button></div>
+              <p id="inspectLinks" class="hint">
+                <a id="inspectSimbad" target="_blank" rel="noopener noreferrer">Look up in SIMBAD</a>
+                <a id="inspectSimbadStras" target="_blank" rel="noopener noreferrer">(Strasbourg)</a> &middot;
+                <a id="inspectWise" target="_blank" rel="noopener noreferrer">Open in WiseView</a>
+              </p>
+              <p id="inspectStatus"><span id="inspectStatusText"></span> <a href="#" id="inspectRetry" style="display:none">Retry</a></p>
+              <p id="inspectNote" class="hint" style="display:none">Not found here doesn't mean new: SIMBAD is just one catalogue, and the click position is approximate.</p>
+            </div>
           </div>
           <!-- reference image of the current field from another telescope (hidden if there is none) -->
           <div id="refCard" style="display:none">
@@ -998,6 +1092,180 @@
       document.getElementById('refCredit').textContent = r.credit;
     }
 
+    // ===== Inspect a spot =====
+    // 1) click -> fraction across the image (0,0 = top-left), 2) fraction -> RA/Dec, 3) show it + links + SIMBAD lookup
+    const FIELD_DEG = 0.2;            // the field is 0.2 deg across the frame (build_target_wcs in the pipeline)
+    const D2R = Math.PI / 180;
+    let inspectOn = false, inspectSeq = 0, inspectCoordText = '';
+    let lastSpot = null;   // for the Retry link
+    let inspectKey = '';   // RA/Dec (5 decimals) of the spot being shown: a new click re-runs the catalogue check only if this changes
+    const inspectBtn = document.getElementById('inspectBtn');
+    const crosshair = document.getElementById('crosshair');
+    const inspectCard = document.getElementById('inspectCard');
+    // scale bar: 1 arcmin as a share of the image width (the field is FIELD_DEG across); CSS container units rescale it on resize
+    document.documentElement.style.setProperty('--field-deg', FIELD_DEG);   // the bar is 1/60 deg: 100cqw / 60 / FIELD_DEG wide
+
+    // Pixel -> sky. The pipeline's grid is a TAN (gnomonic) projection centred on the field, north up, east LEFT;
+    // the PNGs were saved with np.flipud, so the image's TOP edge is north. xi = east offset, eta = north offset
+    // (radians, on the tangent plane); the last lines are the standard inverse gnomonic formulas.
+    function fracToSky(fx, fy) {
+      const xi  = (0.5 - fx) * FIELD_DEG * D2R;   // left of centre = east = larger RA
+      const eta = (0.5 - fy) * FIELD_DEG * D2R;   // above centre = north = larger Dec
+      const a0 = currentTarget.ra * D2R, d0 = currentTarget.dec * D2R;
+      const den = Math.cos(d0) - eta * Math.sin(d0);
+      const dRa = Math.atan2(xi, den);
+      const dec = Math.atan2((Math.sin(d0) + eta * Math.cos(d0)) * Math.cos(dRa), den);
+      return { ra: (((a0 + dRa) / D2R) % 360 + 360) % 360, dec: dec / D2R };
+    }
+    // "HHh MMm SS.Ss +DD° MM′ SS″" (Inspect) or, with fine=true, "HHh MMm SS.SSs +DD° MM′ SS.S″" (hover readout).
+    // Rounds the TOTAL first so e.g. 59.96 s carries into the next minute properly.
+    function fmtSky(ra, dec, fine) {
+      const p = (n, w = 2) => String(n).padStart(w, '0');
+      const rs = fine ? 100 : 10, ds = fine ? 10 : 1;               // RA seconds in 1/100 or 1/10 s; Dec arcsec in 1/10 or whole
+      const t = Math.round(ra / 15 * 3600 * rs) % (86400 * rs);
+      const h = Math.floor(t / (3600 * rs)), m = Math.floor(t % (3600 * rs) / (60 * rs)), sec = (t % (60 * rs)) / rs;
+      const a = Math.round(Math.abs(dec) * 3600 * ds);
+      const d = Math.floor(a / (3600 * ds)), am = Math.floor(a % (3600 * ds) / (60 * ds)), as = (a % (60 * ds)) / ds;
+      return `${p(h)}h ${p(m)}m ${p(sec.toFixed(fine ? 2 : 1), fine ? 5 : 4)}s ${dec < 0 ? '-' : '+'}${p(d)}° ${p(am)}′ ${p(as.toFixed(fine ? 1 : 0), fine ? 4 : 2)}″`;
+    }
+    // pointer position -> fraction across the image (0,0 = top-left), or null if outside; shared by Inspect and hover
+    function fracFromEvent(e) {
+      const r = frameImg.getBoundingClientRect(), b = frameImg.clientLeft;     // clientLeft = the 1px border
+      const fx = (e.clientX - r.left - b) / frameImg.clientWidth;
+      const fy = (e.clientY - r.top - b) / frameImg.clientHeight;
+      return (fx < 0 || fx > 1 || fy < 0 || fy > 1) ? null : { fx, fy };
+    }
+    // ----- hover readout: sky position under the mouse, drawn bottom-left of the image (mouse only, never touch) -----
+    const hoverCoords = document.getElementById('hoverCoords');
+    let hoverEvt = null, hoverRaf = 0;
+    function updateHover() {
+      hoverRaf = 0;
+      const f = hoverEvt && currentTarget ? fracFromEvent(hoverEvt) : null;
+      if (!f) { hoverCoords.style.display = 'none'; return; }
+      const sky = fracToSky(f.fx, f.fy);                       // the SAME function Inspect uses
+      hoverCoords.textContent = fmtSky(sky.ra, sky.dec, true);
+      hoverCoords.style.display = 'block';
+    }
+    frameImg.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      hoverEvt = e;
+      if (!hoverRaf) hoverRaf = requestAnimationFrame(updateHover);   // at most one update per frame
+    });
+    frameImg.addEventListener('pointerleave', () => { hoverEvt = null; hoverCoords.style.display = 'none'; });
+    // first-visit hint under the button: shown once (remembered in localStorage), gone after the first click or 8 seconds
+    const inspectHint = document.getElementById('inspectHint');
+    let inspectHintTimer = 0;
+    function hideInspectHint() { clearTimeout(inspectHintTimer); inspectHint.hidden = true; }
+    function maybeShowInspectHint() {
+      try { if (localStorage.getItem('inspectHintShown')) return; localStorage.setItem('inspectHintShown', '1'); } catch (e) { return; }
+      inspectHint.hidden = false;
+      inspectHintTimer = setTimeout(hideInspectHint, 8000);
+    }
+    document.addEventListener('click', hideInspectHint, true);   // any first click anywhere dismisses it
+    function setInspect(on) {
+      inspectOn = on;
+      inspectBtn.classList.toggle('active', on);
+      inspectBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      frameImg.classList.toggle('inspecting', on);          // crosshair cursor over the image
+      document.getElementById('inspectLabel').textContent = on ? 'Inspecting: click a dot' : 'Inspect a spot';
+      hideInspectHint();
+      if (on) inspectCard.style.display = 'block';     // turning it off keeps any spot on screen; "Clear" removes it
+    }
+    function clearInspect() {
+      inspectSeq++;                                   // any SIMBAD answer still on its way is now stale
+      inspectKey = '';
+      crosshair.style.display = 'none';
+      document.getElementById('inspectBody').style.display = 'none';
+      document.getElementById('inspectEmpty').style.display = 'block';
+    }
+    inspectBtn.onclick = () => setInspect(!inspectOn);
+    document.getElementById('inspectClear').onclick = (e) => { e.preventDefault(); clearInspect(); };
+
+    function inspectAt(e) {
+      if (!currentTarget) return;
+      const f = fracFromEvent(e);
+      if (!f) return;
+      const { fx, fy } = f;
+      const { ra, dec } = fracToSky(fx, fy);
+      const key = ra.toFixed(5) + ',' + dec.toFixed(5);                        // ~0.04 arcsec: "same position"
+      crosshair.style.left = (fx * 100) + '%';       // % of the image: stays on the same spot through frame/band changes
+      crosshair.style.top = (fy * 100) + '%';
+      crosshair.style.display = 'block';
+      inspectCard.style.display = 'block';
+      document.getElementById('inspectEmpty').style.display = 'none';
+      document.getElementById('inspectBody').style.display = 'block';
+      document.querySelector('.tabBtn[data-tab="skyTab"]').click();            // a click on the image shows its result in the Sky tab
+      if (key === inspectKey) return;                                          // same spot: keep the panel (and its answer) as is
+      inspectKey = key;
+      inspectCoordText = fmtSky(ra, dec);
+      document.getElementById('inspectCoords').textContent = inspectCoordText;
+      const sign = dec >= 0 ? '+' : '';
+      const coo = '?Coord=' + encodeURIComponent(`${ra.toFixed(5)} ${sign}${dec.toFixed(5)}`) +
+        '&CooFrame=FK5&CooEpoch=2000&Radius=10&Radius.unit=arcsec&submit=submit+query';       // coordinate search, radius 10 arcsec
+      document.getElementById('inspectSimbad').href = 'https://simbad.cfa.harvard.edu/simbad/sim-coo' + coo;       // main link: Harvard mirror
+      document.getElementById('inspectSimbadStras').href = 'https://simbad.cds.unistra.fr/simbad/sim-coo' + coo;   // the original server
+      document.getElementById('inspectWise').href = `https://byw.tools/wiseview#ra=${ra.toFixed(5)}&dec=${dec.toFixed(5)}&size=120&band=3&zoom=8`;
+      lastSpot = { ra, dec };
+      simbadLookup(ra, dec, ++inspectSeq);
+    }
+    document.getElementById('inspectCopy').onclick = async (e) => {
+      try { await navigator.clipboard.writeText(inspectCoordText); e.target.textContent = 'Copied'; }
+      catch (err) { e.target.textContent = 'Copy failed'; }
+      setTimeout(() => { e.target.textContent = 'Copy'; }, 1500);
+    };
+
+    // Live SIMBAD TAP cone search: nearest object within 5 arcsec. Both servers are asked AT THE SAME TIME and the first
+    // one to answer wins (Promise.any); the other request is cancelled. Each has its own 6 s timeout, and "Couldn't reach
+    // SIMBAD" only appears if BOTH fail or time out. The console says which server answered, or why each failed.
+    // The "not found doesn't mean new" note only appears after a check succeeded.
+    const SIMBAD_TYPES = { '*': 'star', '**': 'double star', 'G': 'galaxy', 'Rad': 'radio source', 'IR': 'infrared source',
+      'Neb': 'nebula', 'RNe': 'reflection nebula', 'Cl*': 'star cluster', 'OpC': 'open cluster', 'Em*': 'emission-line star', 'V*': 'variable star' };
+    const SIMBAD_SERVERS = [
+      { name: 'Harvard mirror', url: 'https://simbad.cfa.harvard.edu/simbad/sim-tap/sync' },
+      { name: 'Strasbourg', url: 'https://simbad.cds.unistra.fr/simbad/sim-tap/sync' }
+    ];
+    async function simbadAsk(server, query, ctl) {               // one request, 6 s timeout; resolves {server, rows} or rejects with a readable reason
+      const timer = setTimeout(() => ctl.abort('timeout'), 6000);
+      try {
+        const res = await fetch(server.url, { method: 'POST', signal: ctl.signal,
+          body: new URLSearchParams({ request: 'doQuery', lang: 'adql', format: 'json', query }) });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return { server, rows: (await res.json()).data || [] };
+      } catch (err) {
+        throw new Error(`${server.name}: ` + (err.name === 'AbortError' ? 'timed out after 6 s' : err.message));
+      } finally { clearTimeout(timer); }
+    }
+    // a result may arrive while another tab is open: put a small dot on the Sky tab label until it is opened
+    function skyResultReady() {
+      if (document.querySelector('#browseCol .tabBtn.active').dataset.tab !== 'skyTab') document.getElementById('skyDot').classList.add('on');
+    }
+    async function simbadLookup(ra, dec, seq) {
+      const text = document.getElementById('inspectStatusText'), retry = document.getElementById('inspectRetry'), note = document.getElementById('inspectNote');
+      text.textContent = 'Checking the catalogue…'; retry.style.display = 'none'; note.style.display = 'none';
+      const q = `SELECT TOP 1 main_id, otype, DISTANCE(POINT('ICRS', ra, dec), POINT('ICRS', ${ra.toFixed(6)}, ${dec.toFixed(6)})) AS d ` +
+        `FROM basic WHERE 1 = CONTAINS(POINT('ICRS', ra, dec), CIRCLE('ICRS', ${ra.toFixed(6)}, ${dec.toFixed(6)}, ${(5 / 3600).toFixed(6)})) ORDER BY d`;
+      const ctls = SIMBAD_SERVERS.map(() => new AbortController());
+      try {
+        const { server, rows } = await Promise.any(SIMBAD_SERVERS.map((sv, i) => simbadAsk(sv, q, ctls[i])));   // first answer wins
+        ctls.forEach(c => c.abort('done'));                                       // stop the slower request
+        if (seq !== inspectSeq) return;                                           // user clicked elsewhere meanwhile
+        console.log(`SIMBAD: answered by ${server.name}`);
+        if (!rows.length) text.textContent = 'No catalogued object within 5 arcsec';
+        else {
+          const [name, type, d] = rows[0];
+          text.textContent = `Nearest catalogued object: ${String(name).trim()} (${SIMBAD_TYPES[type] || type}), ${Number(d * 3600).toFixed(1)}″ away`;
+        }
+        note.style.display = 'block';
+      } catch (err) {                                                             // AggregateError: every server failed
+        if (seq !== inspectSeq) return;
+        console.warn('SIMBAD lookup failed - ' + (err.errors || [err]).map(e => e.message).join(' | '));
+        text.textContent = "Couldn't reach SIMBAD; use the link above";
+        retry.style.display = 'inline';
+      }
+      skyResultReady();
+    }
+    document.getElementById('inspectRetry').onclick = (e) => { e.preventDefault(); if (lastSpot) simbadLookup(lastSpot.ra, lastSpot.dec, ++inspectSeq); };
+
     // click the reference image to see it larger; click or Esc closes
     const refLightbox = document.createElement('div');
     refLightbox.id = 'refLightbox';
@@ -1017,13 +1285,14 @@
       progressBadge.textContent = `Sky Scout: ${done.length} field${done.length === 1 ? '' : 's'} checked`;
     }
 
-    // ----- Browse / Discussion / About tabs -----
+    // ----- Browse / Sky / Discussion / About tabs -----
     const tabBtns = document.querySelectorAll('.tabBtn');
     const tabPanels = document.querySelectorAll('.tabPanel');
     tabBtns.forEach(btn => {
       btn.onclick = () => {
         tabBtns.forEach(b => b.classList.toggle('active', b === btn));
         tabPanels.forEach(p => p.style.display = (p.id === btn.dataset.tab) ? 'flex' : 'none');
+        if (btn.dataset.tab === 'skyTab') document.getElementById('skyDot').classList.remove('on');
       };
     });
 
@@ -1295,8 +1564,11 @@
       pause();
       currentTarget = t;
       heading.textContent = t.label;
+      heading.title = t.label;   // full name on hover (the heading can be cut with an ellipsis next to the Inspect button)
       renderFieldInfo(t);
       renderRefCard(t);
+      clearInspect();   // the crosshair belongs to one field's sky; frame/band changes keep it (same grid), a new field removes it
+      maybeShowInspectHint();
 
       const b = bandsOf(t);
       if (b) {
@@ -1451,13 +1723,13 @@
     }
 
     playBtn.onclick = togglePlay;
-    frameImg.onclick = togglePlay;
+    frameImg.onclick = (e) => inspectOn ? inspectAt(e) : togglePlay();
     prevBtn.onclick = () => step(-1);
     nextBtn.onclick = () => step(1);
     slider.oninput  = () => { if (loading) return; pause(); show(Number(slider.value)); };
     searchBox.oninput = renderList;
 
-    // space plays/pauses, left/right steps a frame, 1/2/3 answer.
+    // space plays/pauses, left/right steps a frame, 1/2/3 answer, I toggles Inspect.
     // Ignored while typing (any input / textarea / select / contenteditable, checked on both the
     // event target and the focused element), while Ctrl/Alt/Meta is held (browser shortcuts), and
     // while a modal is open. Space is also left alone when a button/link has focus, so it only
@@ -1477,6 +1749,7 @@
       else if (e.key === '1') { submitAnswer('moved'); }
       else if (e.key === '2') { submitAnswer('brightness'); }
       else if (e.key === '3') { submitAnswer('nothing'); }
+      else if (e.key === 'i' || e.key === 'I') { setInspect(!inspectOn); }
     });
 
     // mode toggle keeps the same field/band/frame index, just restarts nothing
@@ -1611,7 +1884,7 @@
       const tabId = activeBtn ? activeBtn.dataset.tab : 'browseTab';
       return tabId === 'discussionTab' ? commentsList : document.getElementById(tabId);
     });
-    ['browseTab', 'discussionTab', 'aboutTab'].forEach(id => document.getElementById(id).addEventListener('scroll', updateBrowseFade));
+    ['browseTab', 'skyTab', 'discussionTab', 'aboutTab'].forEach(id => document.getElementById(id).addEventListener('scroll', updateBrowseFade));
     commentsList.addEventListener('scroll', updateBrowseFade);
     window.addEventListener('resize', updateBrowseFade);
     new MutationObserver(updateBrowseFade).observe(browseCol, {

@@ -1,0 +1,11 @@
+# Python packages used by the data pipeline in prep/ (the web page itself needs none of these;
+# serve.py uses only the standard library). Versions are the ones this project was built with.
+astropy>=8.0
+astroquery>=0.4.11
+numpy>=2.5
+scipy>=1.18
+Pillow>=13.0
+requests>=2.34
+reproject>=0.21
+s3fs>=2026.9
+scikit-image

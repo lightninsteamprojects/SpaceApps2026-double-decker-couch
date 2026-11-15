@@ -570,7 +570,6 @@ def clean():
 
 TARGETS = [
     # (id, ra, dec, label)
-    ("test", 210.80227, 54.34895, "Test field"),
     ("m101", 210.80227, 54.34895, "M101 (Pinwheel Galaxy)"),
     # ecliptic-plane fields, best odds of catching a passing asteroid
     ("pleiades", 56.75, 24.12, "Pleiades"),
