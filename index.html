@@ -431,6 +431,12 @@
 
     #fieldBlurb, #fieldFact { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
     #fieldFact { font-style: italic; }
+    /* long descriptions are clamped to 2 lines each; a "More" link (shown only when text is actually cut) expands them */
+    #fieldBlurb.clamped, #fieldFact.clamped { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #fieldMore { margin: -4px 0 10px; font-size: 13px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+    #sourcesList { margin: 0 0 10px; padding-left: 18px; font-size: 13px; }
+    #sourcesList ul { margin: 2px 0 6px; padding-left: 16px; }
+    #sourcesList a { color: var(--accent); }
 
     /* ----- modal (tutorial / how we checked this) ----- */
     .modalOverlay {
@@ -499,6 +505,7 @@
       <h2 id="heading">Loading...</h2>
       <p id="fieldBlurb" style="display:none"></p>
       <p id="fieldFact" style="display:none"></p>
+      <button id="fieldMore" type="button" style="display:none">More</button>
       <div id="imageWrap">
         <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
         <img id="flagOverlay" alt="" aria-hidden="true" style="display:none">
@@ -641,6 +648,30 @@
         <div class="section">
           <h2>About</h2>
           <p>SPHEREx is a NASA space telescope that maps the whole sky in infrared light. Each answer you give is saved, so we can see where people agree.</p>
+          <h3 style="margin:14px 0 6px; font-size:14px">Sources for field descriptions</h3>
+          <ul id="sourcesList">
+            <li>Pleiades
+              <ul><li><a href="https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-45/" target="_blank" rel="noopener noreferrer">Hubble Messier Catalog: Messier 45</a></li></ul></li>
+            <li>M101
+              <ul>
+                <li><a href="https://science.nasa.gov/mission/hubble/science/explore-the-night-sky/hubble-messier-catalog/messier-101/" target="_blank" rel="noopener noreferrer">Hubble Messier Catalog: Messier 101</a></li>
+                <li><a href="https://science.nasa.gov/asset/hubble/hubbles-largest-galaxy-portrait-offers-a-new-high-definition-view/" target="_blank" rel="noopener noreferrer">Hubble's Largest Galaxy Portrait Offers a New High-Definition View</a></li>
+              </ul></li>
+            <li>Galactic center
+              <ul>
+                <li><a href="https://science.nasa.gov/mission/webb/science-overview/science-explainers/what-is-the-center-of-our-galaxy-like/" target="_blank" rel="noopener noreferrer">What Is the Center of Our Galaxy Like? (NASA Webb)</a></li>
+                <li><a href="https://galacticcenter.astro.ucla.edu/learn-about-our-galaxy.html" target="_blank" rel="noopener noreferrer">Learn About Our Galaxy (UCLA Galactic Center Group)</a></li>
+                <li><a href="https://esahubble.org/images/heic1606a/" target="_blank" rel="noopener noreferrer">heic1606a (ESA/Hubble)</a></li>
+                <li><a href="https://www.sciencedirect.com/topics/physics-and-astronomy/galactic-center" target="_blank" rel="noopener noreferrer">Galactic Center (ScienceDirect Topics)</a></li>
+              </ul></li>
+            <li>Ecliptic points and poles
+              <ul>
+                <li><a href="http://hyperphysics.phy-astr.gsu.edu/hbase/eclip.html" target="_blank" rel="noopener noreferrer">The Ecliptic (HyperPhysics)</a></li>
+                <li><a href="https://courses.lumenlearning.com/suny-astronomy/chapter/earth-and-sky/" target="_blank" rel="noopener noreferrer">Earth and Sky (SUNY Astronomy, Lumen Learning)</a></li>
+                <li><a href="https://www.glyphweb.com/esky/concepts/northerneclipticpole.html" target="_blank" rel="noopener noreferrer">Northern Ecliptic Pole (GlyphWeb)</a></li>
+              </ul></li>
+          </ul>
+          <p class="hint">Field descriptions were written by the team from these sources.</p>
           <p class="hint"><a href="#" id="resetProgressLink">Reset my progress</a></p>
         </div>
       </div>
@@ -885,7 +916,27 @@
       if (f && f.blurb) fieldBlurb.textContent = f.blurb;
       fieldFact.style.display = (f && f.fact) ? 'block' : 'none';
       if (f && f.fact) fieldFact.textContent = f.fact;
+      fieldBlurb.classList.add('clamped');
+      fieldFact.classList.add('clamped');
+      updateFieldMore();
     }
+    // show "More" only if the clamp actually hides text; clicking toggles More/Less
+    const fieldMore = document.getElementById('fieldMore');
+    function updateFieldMore() {
+      requestAnimationFrame(() => {
+        const cut = el => el.classList.contains('clamped') && el.style.display !== 'none' && el.scrollHeight > el.clientHeight + 1;
+        const expanded = !fieldBlurb.classList.contains('clamped');
+        fieldMore.style.display = (expanded || cut(fieldBlurb) || cut(fieldFact)) ? 'block' : 'none';
+        fieldMore.textContent = expanded ? 'Less' : 'More';
+      });
+    }
+    fieldMore.onclick = () => {
+      const expand = fieldBlurb.classList.contains('clamped');
+      fieldBlurb.classList.toggle('clamped', !expand);
+      fieldFact.classList.toggle('clamped', !expand);
+      updateFieldMore();
+    };
+    window.addEventListener('resize', updateFieldMore);
 
     // reference image card: shown only when ref.json has an entry for this field
     let refData = {};

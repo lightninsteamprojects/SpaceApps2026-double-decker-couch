@@ -1,35 +1,35 @@
 {
   "test": {"blurb": "", "fact": ""},
   "pleiades": {
-    "blurb": "The Pleiades is a nearby cluster of young, hot stars, also called the Seven Sisters.",
-    "fact": "The cluster is only about 100 million years old, far younger than the Sun."
+    "blurb": "The Pleiades, also known as the Seven Sisters, is an open star cluster in the constellation Taurus.",
+    "fact": "It contains over 1,000 stars held together by gravity, many of which formed at the same time."
   },
   "m101": {
-    "blurb": "M101 is the Pinwheel Galaxy, a large spiral galaxy similar in shape to our own.",
-    "fact": "M101 is roughly twice the width of the Milky Way."
+    "blurb": "M101, also known as the Pinwheel Galaxy, is a large spiral galaxy in the constellation Ursa Major.",
+    "fact": "Its bright spiral arms contain gas and dust, with regions where new stars are forming."
   },
   "beehive": {
-    "blurb": "The Beehive Cluster (M44) is an open star cluster visible to the naked eye.",
-    "fact": "It's one of the nearest open star clusters to the Sun."
+    "blurb": "The Beehive Cluster (M44) is an open star cluster in the constellation Cancer.",
+    "fact": "Its stars appear grouped together like a swarm of bees."
   },
   "ecliptic0": {
-    "blurb": "This field lies in the ecliptic plane, the path the Sun and planets trace across the sky -- where most asteroids orbit too.",
-    "fact": "Fields on the ecliptic are where moving solar-system objects are most likely to turn up."
+    "blurb": "This point is where the ecliptic, the Sun's apparent path across the sky, crosses the celestial equator at the March (vernal) equinox.",
+    "fact": "It marks the beginning of right ascension, the celestial coordinate system's measure of east-west position."
   },
   "ecliptic180": {
-    "blurb": "This field lies in the ecliptic plane, the path the Sun and planets trace across the sky -- where most asteroids orbit too.",
-    "fact": "Fields on the ecliptic are where moving solar-system objects are most likely to turn up."
+    "blurb": "The ecliptic point at right ascension (RA) 180° is the September equinox.",
+    "fact": "At this point on the celestial sphere, the Sun's apparent path (the ecliptic) crosses the celestial equator as it moves from north to south."
   },
   "galactic_center": {
-    "blurb": "This field looks toward the center of the Milky Way galaxy.",
-    "fact": "The Milky Way's central supermassive black hole, Sagittarius A*, lies in this direction."
+    "blurb": "The galactic center is the dynamical center of a galaxy, with a massive black hole surrounded by clusters of massive stars, such as those near Sgr A* in the Milky Way.",
+    "fact": "It is a unique environment for star formation, and because dust dims its light so strongly (high extinction), it has to be studied in infrared."
   },
   "north_pole": {
-    "blurb": "This field looks toward the north ecliptic pole, perpendicular to the plane of the solar system.",
-    "fact": "Being far from the ecliptic plane, this region sees very few asteroids or comets passing through."
+    "blurb": "The North Ecliptic Pole is the point on the celestial sphere, in the constellation Draco, that lies directly north of the ecliptic plane.",
+    "fact": "Its counterpart, the South Ecliptic Pole, lies diametrically opposite, in the constellation Dorado."
   },
   "south_pole": {
-    "blurb": "This field looks toward the south ecliptic pole, perpendicular to the plane of the solar system.",
-    "fact": "Being far from the ecliptic plane, this region sees very few asteroids or comets passing through."
+    "blurb": "The South Ecliptic Pole is the point in the sky 90° south of the ecliptic, directly below the plane of the solar system.",
+    "fact": "It lies close to the Large Magellanic Cloud, in the constellation Dorado."
   }
 }
