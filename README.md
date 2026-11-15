@@ -30,8 +30,8 @@ See `docs/RUN_LOCALLY.md`. In short: `python serve.py`, then open http://localho
 
 ## Team
 
-- Arjun Ninad Bendkhale with name: Python pipeline and deployment
-- Susab Singh and Iqra Mirza with name: design, README and field descriptions
+- Arjun Ninad Bendkhale: Python pipeline and deployment
+- Susab Singh and Iqra Mirza: design, README and field descriptions
 
 ## Data and credits
 
