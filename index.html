@@ -120,6 +120,10 @@
       transition: opacity .15s;
     }
     .scrollFade.hidden { opacity: 0; }
+    /* #answerCol is itself the scroll container, so an absolute fade scrolls away with
+       the content and dims text mid-panel (and a sticky one dims the last lines),
+       so it is turned off there; the scrollbar already hints at more content */
+    #answerFade { display: none; }
 
     @media (min-width: 900px) {
       main {
@@ -544,7 +548,7 @@
           <!-- normal / difference toggle, only shown when the current band has diff images -->
           <div id="modeRow" class="pillRow" style="display:none">
             <button id="modeNormalBtn" class="pillBtn active">Normal</button>
-            <button id="modeDiffBtn" class="pillBtn">Difference</button>
+            <button id="modeDiffBtn" class="pillBtn">Difference (experimental)</button>
           </div>
           <label id="smoothLabel">
             <input type="checkbox" id="smoothToggle">
@@ -585,7 +589,6 @@
           <p id="noMatch"></p>
           <div class="row">
             <button id="randomBtn">Random field</button>
-            <button id="surpriseBtn">Surprise me</button>
             <button id="copyBtn">Copy link</button>
           </div>
         </div>
@@ -1135,7 +1138,7 @@
     // open a field. push = true adds it to the page address.
     // band/mode are optional (short band code like "D2", and 'normal'/'diff');
     // missing or invalid ones fall back to sensible defaults.
-    function openField(id, push, band, mode) {
+    function openField(id, push, band, mode, startFrame) {
       const t = targets.find(x => x.id === id);
       if (!t) return false;
       pause();
@@ -1156,7 +1159,7 @@
 
       slider.max = frames.length - 1;
       renderTimelineEnds();
-      show(0);
+      show(Math.min(Math.max(startFrame || 0, 0), frames.length - 1));
       updatePlayState();
       loading = true;
       prevBtn.disabled = playBtn.disabled = nextBtn.disabled = true;
@@ -1367,16 +1370,22 @@
       setTimeout(() => { copyImgBtn.textContent = 'Copy image'; }, 1500);
     };
 
+    // band names (full, sorted) of a field that actually have frames
+    function usableBands(t) {
+      const b = bandsOf(t);
+      return b ? Object.keys(b).filter(k => b[k] && b[k].length).sort() : [];
+    }
+
+    // Random field: an undone field (any field if all are done), keeping the
+    // current band when that field has it, else its first band; opens at frame 1
     document.getElementById('randomBtn').onclick = () => {
       statusP.textContent = '';
-      openField(pickNext().target.id, true);
+      const t = pickNext().target;
+      const ub = usableBands(t);
+      const band = (currentBand && ub.includes(currentBand)) ? currentBand : ub[0];
+      openField(t.id, true, band ? bandCode(band) : undefined, undefined, 0);
     };
-    document.getElementById('surpriseBtn').onclick = () => {
-      statusP.textContent = '';
-      const undone = targets.filter(t => !done.includes(t.id));
-      if (!undone.length) { statusP.textContent = 'You have done every field!'; return; }
-      openField(undone[Math.floor(Math.random() * undone.length)].id, true);
-    };
+
     document.getElementById('resetProgressLink').onclick = (e) => {
       e.preventDefault();
       if (!confirm('Reset your progress? This clears your "done" list and shows the tutorial again next time.')) return;
