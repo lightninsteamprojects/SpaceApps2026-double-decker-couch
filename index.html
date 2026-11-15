@@ -14,7 +14,6 @@
       --text: #e8eaee;
       --muted: #98a0b0;
       --accent: #5b9bff;
-      --s: calc(min(calc(100dvh - 230px), 52vw) * 0.9);  /* viewer column / image width+height at >=1200px */
       --scroll-thumb: #3a4252;
       --scroll-thumb-hover: #4a5468;
       color-scheme: dark;
@@ -35,17 +34,18 @@
       line-height: 1.55;
     }
 
-    /* the page itself must not scroll at this size -- #viewerCol's content is
-       allowed to overflow its own grid cell (so it doesn't get an inner scrollbar),
-       but without this, that overflow extends past the viewport and the whole
-       page gets a scrollbar. html/body overflow:hidden clips it instead. */
-    @media (min-width: 1200px) and (min-height: 600px) {
-      html, body { overflow: hidden; height: 100%; }
+    /* wide AND tall enough: the page is exactly one window tall (100dvh) and never scrolls --
+       header on top, <main> takes whatever height is left. Shorter than ~560px (or narrower
+       than 1200px) none of this applies and the whole page simply scrolls vertically. */
+    @media (min-width: 1200px) and (min-height: 560px) {
+      html, body { height: 100%; }
+      body { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+      header { flex: 0 0 auto; }
+      main { flex: 1 1 auto; min-height: 0; }
     }
 
     header {
-      height: 56px;
-      padding: 0 24px;
+      padding: 0.6rem 1.5rem;
       display: flex;
       align-items: center;
       gap: 16px;
@@ -102,7 +102,7 @@
     /* tightens the gap between the two side panels to 12px without touching the
        main grid's own 24px gap (which still separates the viewer column as before) */
     #browseCol { margin-top: -12px; }
-    @media (min-width: 1200px) and (min-height: 600px) {
+    @media (min-width: 1200px) and (min-height: 560px) {
       #browseCol { margin-top: 0; margin-left: -12px; }
     }
 
@@ -131,48 +131,68 @@
         grid-template-areas: "viewer answer" "viewer browse";
       }
     }
-    /* at this width the whole page is meant to fit the window with no scrolling --
-       #mainGrid's height is set from JS to the window height minus the header.
-       column 1 is exactly --s wide so the image fills it; the sidebars share the rest
-       and may scroll internally, but the viewer column itself must not */
-    @media (min-width: 1200px) and (min-height: 600px) {
+    /* wide + tall: three columns filling <main>. Column 1 is as wide as the square image
+       needs (fit-content, capped), the other two share what is left. The sidebars may
+       scroll internally; the viewer column never does. */
+    @media (min-width: 1200px) and (min-height: 560px) {
       main {
-        grid-template-columns: var(--s) minmax(300px, 1fr) minmax(260px, 0.7fr);
-        grid-template-rows: minmax(0, 1fr);  /* without this, an "auto" row grows to fit
-          whichever column's content is tallest (e.g. a long comment list), inflating the
-          whole grid -- and the page -- past the viewport instead of letting that column
-          scroll internally */
+        --rows: 16rem;
+        grid-template-columns: auto minmax(18rem, 1fr) minmax(16rem, 0.7fr);
+        container-type: size;   /* lets #viewerCol size itself from the height <main> has (cqh) */
+        grid-template-rows: minmax(0, 1fr);  /* an "auto" row would grow to the tallest column's content
+          (e.g. a long comment list) and push the page past the window instead of letting it scroll */
         grid-template-areas: "viewer answer browse";
         align-items: stretch;
         overflow: hidden;
       }
-      #viewerCol { overflow: visible; min-height: 0; }
+      /* The column is as wide as the square image: the height <main> has (100cqh) minus what the
+         text rows and playback row need (the description is clamped to 2 lines, so that is bounded:
+         ~12-15rem, with room for the "More" link), but never wider than 56% of <main> and never narrower
+         than the playback row needs (19.5rem). --rows is that text/controls allowance. */
+      #viewerCol {
+        min-height: 0;
+        width: clamp(19.5rem, min(100cqh - var(--rows), 56cqw), 100cqw);
+        display: flex;
+        flex-direction: column;
+      }
+      #viewerCol > * { flex: 0 0 auto; }
       #answerCol { min-height: 0; overflow-y: auto; }
       #browseCol { min-height: 0; overflow: hidden; }  /* its tab panels scroll themselves, see below */
+    }
+    /* short windows: spend less height on the description (1 line each; "More" expands it) so the image gets more */
+    @media (min-width: 1200px) and (min-height: 560px) and (max-height: 760px) {
+      main { --rows: 13.5rem; }
+      main #fieldBlurb.clamped, main #fieldFact.clamped { -webkit-line-clamp: 1; line-clamp: 1; }
     }
 
     /* ----- viewer ----- */
     #heading { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
 
-    #imageWrap { position: relative; }
-
+    /* #imageBox is the square the image (and the flag overlay / Paused label) live in.
+       Narrow/short layouts: as wide as its column, capped by window height. */
+    #imageBox { position: relative; width: 100%; max-width: min(100%, 70dvh); aspect-ratio: 1 / 1; }
     #frame {
       display: block;
       width: 100%;
-      /* square, capped so the controls below it still fit on screen without
-         scrolling the column (fallback for < 1200px, overridden below) */
-      max-width: min(100%, calc(100vh - 280px));
-      max-height: calc(100vh - 280px);
-      aspect-ratio: 1 / 1;
+      height: 100%;
       object-fit: cover;
       image-rendering: pixelated;   /* keeps the real pixels sharp */
       background: #000;
       border: 1px solid var(--line);
       cursor: pointer;
     }
-    @media (min-width: 1200px) and (min-height: 600px) {
-      #imageWrap { width: var(--s); }
-      #frame { width: var(--s); height: var(--s); max-width: none; max-height: none; }
+    /* wide + tall: #imageWrap takes all the height left in the column (title/info/controls keep
+       their natural size) and is a size container; the image is the biggest square that fits it. */
+    @media (min-width: 1200px) and (min-height: 560px) {
+      #imageWrap {
+        flex: 1 1 0;
+        min-height: 8rem;
+        container-type: size;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #imageBox { width: min(100cqw, 100cqh); max-width: none; }
     }
 
     #pausedLabel {
@@ -200,7 +220,7 @@
     #prevBtn, #nextBtn, #playBtn { flex: 0 0 auto; padding: 7px 10px; }
     #prevBtn, #nextBtn { width: 36px; }
     #playBtn { width: 64px; }
-    #slider { flex: 1 1 auto; min-width: 100px; width: auto; margin-top: 0; accent-color: var(--accent); }
+    #slider { flex: 1 1 auto; min-width: 4rem; width: auto; margin-top: 0; accent-color: var(--accent); }
     #speedSelect {
       flex: 0 0 auto;
       font: inherit;
@@ -248,11 +268,11 @@
     #refCard h3 { margin: 0 0 6px; font-size: 13px; }
     /* the image area is a size container so the square image can be sized to whichever of
        width/height is smaller, so it fills the space and the border hugs the picture */
-    #refImgWrap { flex: 1 1 0; min-height: 120px; display: flex; align-items: center; justify-content: center; container-type: size; }
+    #refImgWrap { flex: 1 1 0; min-height: 7.5rem; display: flex; align-items: center; justify-content: center; container-type: size; }
     #refImg { width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; cursor: zoom-in; }
     #refCard .hint { font-size: 11px; margin-top: 4px; }
     #refLightbox { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .85); display: none; align-items: center; justify-content: center; cursor: zoom-out; }
-    #refLightbox img { width: min(90vw, 90vh); height: min(90vw, 90vh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; }
+    #refLightbox img { width: min(90vw, 90dvh); height: min(90vw, 90dvh); object-fit: contain; border: 1px solid var(--line); border-radius: 6px; }
 
     /* band note + description: small, capped at 2 lines so they can't push the
        column taller than the no-scroll budget */
@@ -334,7 +354,7 @@
       list-style: none;
       margin: 0;
       padding: 0;
-      max-height: 220px;
+      max-height: min(14rem, 35dvh);
       overflow-y: auto;
       border: 1px solid var(--line);
       border-radius: 6px;
@@ -433,7 +453,7 @@
     #fieldFact { font-style: italic; }
     /* long descriptions are clamped to 2 lines each; a "More" link (shown only when text is actually cut) expands them */
     #fieldBlurb.clamped, #fieldFact.clamped { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    #fieldMore { margin: -4px 0 10px; font-size: 13px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+    #fieldMore { align-self: flex-start; margin: -4px 0 10px; font-size: 13px; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
     #sourcesList { margin: 0 0 10px; padding-left: 18px; font-size: 13px; }
     #sourcesList ul { margin: 2px 0 6px; padding-left: 16px; }
     #sourcesList a { color: var(--accent); }
@@ -471,22 +491,18 @@
     }
     /* the footer would push the page past the window height at this size,
        breaking the no-scroll layout -- the same credit text already sits in #creditLine */
-    @media (min-width: 1200px) and (min-height: 600px) {
+    @media (min-width: 1200px) and (min-height: 560px) {
       footer { display: none; }
     }
 
-    /* landscape phones: the fixed-height no-scroll layout above only applies
-       when the window is both wide AND tall enough -- under 600px tall, fall
-       back to a normally-scrolling 2-column layout (image left, everything
-       else stacked and scrolling on the right), regardless of width */
-    @media (max-height: 599px) {
-      #mainGrid { height: auto !important; }  /* un-set the inline height JS applies at >=1200px wide */
+    /* shorter than ~560px (landscape phones, tiny windows): no fixed-height layout, the page scrolls.
+       Two columns: image left, everything else stacked on the right. */
+    @media (max-height: 559px) {
       main {
         grid-template-columns: 1.4fr 1fr;
         grid-template-areas: "viewer answer" "viewer browse";
       }
-      #imageWrap, #frame { width: min(70vh, 45vw); }
-      #frame { height: min(70vh, 45vw); max-width: none; max-height: none; }
+      #imageBox { width: min(70dvh, 45vw); max-width: none; }
     }
   </style>
 </head>
@@ -507,9 +523,11 @@
       <p id="fieldFact" style="display:none"></p>
       <button id="fieldMore" type="button" style="display:none">More</button>
       <div id="imageWrap">
-        <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
-        <img id="flagOverlay" alt="" aria-hidden="true" style="display:none">
-        <div id="pausedLabel" style="display:none">Paused</div>
+        <div id="imageBox">
+          <img id="frame" alt="Infrared image of a patch of sky from the SPHEREx telescope">
+          <img id="flagOverlay" alt="" aria-hidden="true" style="display:none">
+          <div id="pausedLabel" style="display:none">Paused</div>
+        </div>
       </div>
       <div id="info"></div>
       <p id="loadingLabel" style="display:none"></p>
@@ -912,9 +930,9 @@
 
     function renderFieldInfo(t) {
       const f = fields[t.id];
-      fieldBlurb.style.display = (f && f.blurb) ? 'block' : 'none';
+      fieldBlurb.style.display = (f && f.blurb) ? '' : 'none';  // '' so the .clamped rule's display:-webkit-box applies
       if (f && f.blurb) fieldBlurb.textContent = f.blurb;
-      fieldFact.style.display = (f && f.fact) ? 'block' : 'none';
+      fieldFact.style.display = (f && f.fact) ? '' : 'none';
       if (f && f.fact) fieldFact.textContent = f.fact;
       fieldBlurb.classList.add('clamped');
       fieldFact.classList.add('clamped');
@@ -1525,19 +1543,6 @@
       if (h) openField(h.id, false, h.band, h.mode);
     });
 
-    // at >= 1200px wide the three columns are meant to fill the window with no
-    // page scrolling -- size the grid to exactly the window height minus the header
-    const mainGrid = document.getElementById('mainGrid');
-    function sizeMainGrid() {
-      if (window.innerWidth >= 1200) {
-        const headerH = document.querySelector('header').getBoundingClientRect().height;
-        mainGrid.style.height = `calc(100dvh - ${headerH}px)`;
-      } else {
-        mainGrid.style.height = '';
-      }
-    }
-    window.addEventListener('resize', sizeMainGrid);
-    sizeMainGrid();
 
     // scroll hint: hide each panel's bottom fade once it's scrolled to the bottom,
     // or if its content doesn't overflow in the first place
